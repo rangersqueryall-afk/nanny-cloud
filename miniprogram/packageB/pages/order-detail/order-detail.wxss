@@ -1,0 +1,286 @@
+/* 订单详情页样式 */
+.order-detail-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 140rpx;
+}
+
+/* 状态区域 */
+.status-section {
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  padding: 60rpx 30rpx;
+  text-align: center;
+  color: #fff;
+}
+
+.status-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.status-text {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.status-desc {
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+/* 通用卡片样式 */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx 30rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+/* 状态流程 */
+.process-list {
+  padding-left: 20rpx;
+}
+
+.process-item {
+  position: relative;
+  padding-left: 40rpx;
+  padding-bottom: 40rpx;
+}
+
+.process-item:last-child {
+  padding-bottom: 0;
+}
+
+.process-dot {
+  position: absolute;
+  left: 0;
+  top: 6rpx;
+  width: 20rpx;
+  height: 20rpx;
+  background: #ddd;
+  border-radius: 50%;
+}
+
+.process-line {
+  position: absolute;
+  left: 8rpx;
+  top: 30rpx;
+  width: 4rpx;
+  height: calc(100% - 10rpx);
+  background: #ddd;
+}
+
+.process-item.completed .process-dot {
+  background: #52C41A;
+}
+
+.process-item.completed .process-line {
+  background: #52C41A;
+}
+
+.process-item.active .process-dot {
+  background: #FF6B6B;
+  box-shadow: 0 0 0 8rpx rgba(255, 107, 107, 0.2);
+}
+
+.process-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.process-name {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.process-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 阿姨信息 */
+.worker-info {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 0;
+}
+
+.worker-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 12rpx;
+  margin-right: 20rpx;
+  object-fit: cover;
+}
+
+.worker-detail {
+  flex: 1;
+}
+
+.worker-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.service-type {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #999;
+}
+
+/* 信息列表 */
+.info-list {
+  padding: 10rpx 0;
+}
+
+.info-item {
+  display: flex;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.item-label {
+  width: 160rpx;
+  font-size: 28rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.item-value {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* 价格明细 */
+.price-detail {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f5f5f5;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.price-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.price-value {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.price-value.discount {
+  color: #52C41A;
+}
+
+.divider {
+  height: 1rpx;
+  background: #f0f0f0;
+  margin: 16rpx 0;
+}
+
+.price-row.total {
+  padding-top: 16rpx;
+}
+
+.price-row.total .price-label {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.price-total {
+  font-size: 40rpx;
+  color: #FF6B6B;
+  font-weight: bold;
+}
+
+/* 底部占位 */
+.bottom-placeholder {
+  height: 40rpx;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.action-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20rpx;
+}
+
+.btn {
+  min-width: 160rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 28rpx;
+  border-radius: 36rpx;
+  padding: 0 30rpx;
+  margin: 0;
+  border: none;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn.default {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  color: #fff;
+}
+
+.btn.danger {
+  background: #fff;
+  color: #FF6B6B;
+  border: 2rpx solid #FF6B6B;
+}
+
+.btn:active {
+  opacity: 0.9;
+}

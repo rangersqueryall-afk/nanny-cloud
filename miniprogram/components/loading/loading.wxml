@@ -1,0 +1,46 @@
+<!-- 加载动画组件 -->
+<view class="loading-container {{type}} {{fullScreen ? 'fullscreen' : ''}}" wx:if="{{visible}}">
+  <!-- 旋转动画类型 -->
+  <view class="loading-spinner" wx:if="{{type === 'spinner'}}">
+    <view class="spinner-circle"></view>
+  </view>
+  
+  <!-- 点动画类型 -->
+  <view class="loading-dots" wx:if="{{type === 'dots'}}">
+    <view class="dot"></view>
+    <view class="dot"></view>
+    <view class="dot"></view>
+  </view>
+  
+  <!-- 脉冲动画类型 -->
+  <view class="loading-pulse" wx:if="{{type === 'pulse'}}">
+    <view class="pulse-ring"></view>
+    <view class="pulse-ring"></view>
+    <view class="pulse-ring"></view>
+  </view>
+  
+  <!-- 进度条类型 -->
+  <view class="loading-bar" wx:if="{{type === 'bar'}}">
+    <view class="bar-track">
+      <view class="bar-progress" style="width: {{progress}}%"></view>
+    </view>
+    <text class="bar-text" wx:if="{{showPercent}}">{{progress}}%</text>
+  </view>
+  
+  <!-- 骨架屏类型 -->
+  <view class="loading-skeleton" wx:if="{{type === 'skeleton'}}">
+    <view class="skeleton-item" wx:for="{{skeletonRows}}" wx:key="index">
+      <view class="skeleton-avatar" wx:if="{{showAvatar}}"></view>
+      <view class="skeleton-content">
+        <view class="skeleton-line" style="width: {{item.titleWidth}}"></view>
+        <view class="skeleton-line short" style="width: {{item.descWidth}}"></view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 加载文字 -->
+  <text class="loading-text" wx:if="{{text && type !== 'skeleton'}}">{{text}}</text>
+</view>
+
+<!-- 遮罩层 -->
+<view class="loading-mask" wx:if="{{visible && mask && type !== 'skeleton'}}" bindtap="onMaskTap"></view>

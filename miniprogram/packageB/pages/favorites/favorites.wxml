@@ -1,0 +1,38 @@
+<view class="favorites-page">
+  <scroll-view
+    class="favorites-list"
+    scroll-y="{{true}}"
+    bindscrolltolower="onLoadMore"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    refresher-background="#f5f5f5"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="list-content" wx:if="{{favorites.length > 0}}">
+      <view class="favorite-card" wx:for="{{favorites}}" wx:key="workerId">
+        <view class="main" bindtap="onCardTap" data-worker-id="{{item.workerId}}">
+          <image class="avatar" src="{{item.workerAvatar || '/images/default-avatar.png'}}" mode="aspectFill" />
+          <view class="info">
+            <text class="name">{{item.workerName || '阿姨'}}</text>
+            <text class="time">收藏于 {{item.createdAtText}}</text>
+          </view>
+        </view>
+        <view class="actions">
+          <button class="btn btn-detail" data-worker-id="{{item.workerId}}" bindtap="onCardTap">查看详情</button>
+          <button class="btn btn-remove" data-worker-id="{{item.workerId}}" bindtap="onRemove">取消收藏</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="load-status">
+      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+      <text class="no-more" wx:if="{{!hasMore && favorites.length > 0}}">没有更多了</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!isLoading && favorites.length === 0}}">
+      <text class="empty-icon">⭐</text>
+      <text class="empty-text">还没有收藏阿姨</text>
+      <button class="btn-go" bindtap="onGoWorkers">去挑选阿姨</button>
+    </view>
+  </scroll-view>
+</view>

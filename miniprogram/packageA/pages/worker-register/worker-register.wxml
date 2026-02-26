@@ -1,0 +1,148 @@
+<view class="container">
+  <view class="header">
+    <text class="title">注册为阿姨</text>
+    <text class="subtitle">填写您的基本信息，审核通过后即可接单</text>
+  </view>
+
+  <view class="form">
+    <!-- 头像 -->
+    <view class="form-item">
+      <text class="label">头像</text>
+      <view class="avatar-upload" bindtap="chooseAvatar">
+        <image wx:if="{{form.avatar}}" class="avatar" src="{{form.avatar}}" mode="aspectFill"/>
+        <view wx:else class="avatar-placeholder">
+          <text class="icon">+</text>
+          <text class="text">上传头像</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 姓名 -->
+    <view class="form-item">
+      <text class="label">真实姓名 <text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="text" 
+        placeholder="请输入您的真实姓名"
+        value="{{form.name}}"
+        bindinput="onInput"
+        data-field="name"
+      />
+    </view>
+
+    <!-- 年龄 -->
+    <view class="form-item">
+      <text class="label">年龄 <text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="number" 
+        placeholder="请输入您的年龄"
+        value="{{form.age}}"
+        bindinput="onInput"
+        data-field="age"
+      />
+    </view>
+
+    <!-- 籍贯 -->
+    <view class="form-item">
+      <text class="label">籍贯 <text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="text" 
+        placeholder="例如：安徽合肥"
+        value="{{form.hometown}}"
+        bindinput="onInput"
+        data-field="hometown"
+      />
+    </view>
+
+    <!-- 手机号 -->
+    <view class="form-item">
+      <text class="label">手机号 <text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="number" 
+        placeholder="请输入您的手机号"
+        value="{{form.phone}}"
+        bindinput="onInput"
+        data-field="phone"
+      />
+    </view>
+
+    <!-- 工作经验 -->
+    <view class="form-item">
+      <text class="label">工作经验（年）<text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="number" 
+        placeholder="例如：5"
+        value="{{form.experience}}"
+        bindinput="onInput"
+        data-field="experience"
+      />
+    </view>
+
+    <!-- 服务类型 -->
+    <view class="form-item">
+      <text class="label">服务类型 <text class="required">*</text></text>
+      <view class="checkbox-group">
+        <view 
+          class="checkbox {{form.serviceTypes.includes(item.id) ? 'checked' : ''}}"
+          wx:for="{{serviceTypes}}"
+          wx:key="id"
+          bindtap="toggleServiceType"
+          data-id="{{item.id}}"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 技能标签 -->
+    <view class="form-item">
+      <text class="label">技能标签</text>
+      <view class="tag-input">
+        <input 
+          class="input" 
+          type="text" 
+          placeholder="输入技能标签，用逗号分隔"
+          value="{{skillsInput}}"
+          bindinput="onSkillsInput"
+        />
+      </view>
+      <view class="tags-preview">
+        <text class="tag" wx:for="{{form.skills}}" wx:key="index">{{item}}</text>
+      </view>
+    </view>
+
+    <!-- 服务价格 -->
+    <view class="form-item">
+      <text class="label">服务价格（元/月）<text class="required">*</text></text>
+      <input 
+        class="input" 
+        type="number" 
+        placeholder="例如：6000"
+        value="{{form.priceMonthly}}"
+        bindinput="onInput"
+        data-field="priceMonthly"
+      />
+    </view>
+
+    <!-- 个人简介 -->
+    <view class="form-item">
+      <text class="label">个人简介</text>
+      <textarea 
+        class="textarea" 
+        placeholder="请简单介绍您的工作经历、特长等"
+        value="{{form.bio}}"
+        bindinput="onInput"
+        data-field="bio"
+        maxlength="200"
+      />
+      <text class="count">{{form.bio.length}}/200</text>
+    </view>
+
+    <!-- 提交按钮 -->
+    <button class="btn-submit" bindtap="submit">提交注册</button>
+  </view>
+</view>

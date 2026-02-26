@@ -1,0 +1,227 @@
+/* 筛选栏组件样式 */
+.filter-bar {
+  position: relative;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+/* 筛选选项 */
+.filter-options {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+}
+
+.filter-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  cursor: pointer;
+}
+
+.filter-text {
+  font-size: 28rpx;
+  color: #666;
+  max-width: 120rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-arrow {
+  font-size: 18rpx;
+  color: #999;
+  margin-left: 8rpx;
+  transition: transform 0.3s;
+}
+
+.filter-arrow.up {
+  transform: rotate(180deg);
+}
+
+.filter-item.active .filter-text {
+  color: #FF6B6B;
+}
+
+.filter-item.active .filter-arrow {
+  color: #FF6B6B;
+}
+
+/* 下拉面板 */
+.filter-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.filter-panel.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.panel-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.panel-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  max-height: 70vh;
+  overflow-y: auto;
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+}
+
+.filter-panel.show .panel-content {
+  transform: translateY(0);
+}
+
+/* 列表选项 */
+.panel-list {
+  padding: 10rpx 0;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 30rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item.active .item-text {
+  color: #FF6B6B;
+}
+
+.item-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.item-check {
+  font-size: 28rpx;
+  color: #FF6B6B;
+}
+
+/* 范围选项 */
+.panel-range {
+  padding: 30rpx;
+}
+
+.range-section {
+  margin-bottom: 30rpx;
+}
+
+.range-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.range-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.range-item {
+  min-width: 140rpx;
+  padding: 16rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: #666;
+  text-align: center;
+}
+
+.range-item.active {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+}
+
+/* 自定义范围 */
+.panel-custom-range {
+  padding: 30rpx;
+}
+
+.custom-inputs {
+  display: flex;
+  align-items: center;
+  margin: 30rpx 0;
+}
+
+.range-input {
+  flex: 1;
+  height: 72rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.range-separator {
+  margin: 0 20rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 底部按钮 */
+.panel-footer {
+  display: flex;
+  padding: 20rpx 30rpx;
+  border-top: 1rpx solid #f0f0f0;
+  gap: 20rpx;
+}
+
+.btn-reset,
+.btn-confirm {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  margin: 0;
+  padding: 0;
+}
+
+.btn-reset {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  color: #fff;
+}
+
+.btn-confirm::after,
+.btn-reset::after {
+  border: none;
+}
+
+.btn-confirm.primary {
+  margin-top: 20rpx;
+}

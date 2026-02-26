@@ -1,0 +1,99 @@
+/* 阿姨列表页样式 */
+.workers-page {
+  height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 搜索栏 */
+.search-section {
+  background: #fff;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 36rpx;
+  padding: 16rpx 24rpx;
+}
+
+.search-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  color: #999;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  height: 40rpx;
+  line-height: 40rpx;
+}
+
+.clear-icon {
+  font-size: 24rpx;
+  color: #999;
+  padding: 8rpx;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  background: #fff;
+}
+
+/* 阿姨列表 */
+.worker-list {
+  height: calc(100vh - 160rpx);
+  padding: 20rpx 30rpx;
+  box-sizing: border-box;
+}
+
+.list-content {
+  min-height: 200rpx;
+}
+
+/* 下拉刷新区域样式优化 */
+.worker-list ::-webkit-scrollbar {
+  display: none;
+}
+
+/* 加载状态 */
+.load-status {
+  padding: 40rpx 0;
+  text-align: center;
+}
+
+.no-more {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.empty-tip {
+  font-size: 26rpx;
+  color: #999;
+}

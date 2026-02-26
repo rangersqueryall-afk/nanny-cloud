@@ -1,0 +1,49 @@
+<!-- 阿姨卡片组件 -->
+<view class="worker-card" bindtap="onTap">
+  <!-- 左侧头像 -->
+  <view class="avatar-section">
+    <image class="avatar" src="{{worker.avatar || defaultAvatar}}" mode="aspectFill"/>
+    <view class="cert-tag" wx:if="{{worker.isVerified}}">认证</view>
+  </view>
+  
+  <!-- 中间信息区域 -->
+  <view class="info-section">
+    <!-- 第一行：姓名和评分 -->
+    <view class="name-row">
+      <text class="name">{{worker.name}}</text>
+      <view class="rating">
+        <text class="star">★</text>
+        <text class="score">{{worker.rating || 5.0}}</text>
+      </view>
+    </view>
+    
+    <!-- 第二行：基本信息 -->
+    <view class="base-info">
+      <text class="info-item">{{worker.age}}岁</text>
+      <text class="divider">|</text>
+      <text class="info-item">{{worker.hometown || worker.origin || '未知'}}</text>
+      <text class="divider">|</text>
+      <text class="info-item">{{worker.experience}}年经验</text>
+    </view>
+    
+    <!-- 第三行：技能标签 -->
+    <view class="tags-row">
+      <text class="tag" wx:for="{{worker.skills || []}}" wx:key="index" wx:if="{{index < 3}}">{{item}}</text>
+    </view>
+    
+    <!-- 第四行：价格和订单数 -->
+    <view class="price-row">
+      <view class="price">
+        <text class="price-unit">¥</text>
+        <text class="price-value">{{worker.price.monthly || worker.price}}</text>
+        <text class="price-unit">/月</text>
+      </view>
+      <text class="order-count">已接{{worker.orderCount || 0}}单</text>
+    </view>
+  </view>
+  
+  <!-- 右侧预约按钮 -->
+  <view class="action-section">
+    <view class="btn-book" catchtap="onBookTap">预约</view>
+  </view>
+</view>

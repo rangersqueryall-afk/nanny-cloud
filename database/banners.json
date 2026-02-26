@@ -1,0 +1,39 @@
+{
+  "collection": "banners",
+  "description": "首页轮播图数据",
+  "data": [
+    {
+      "_id": "b001",
+      "imageUrl": "/images/banner1.jpg",
+      "title": "专业保姆服务",
+      "subtitle": "8年经验，贴心呵护",
+      "link": "/pages/workers/workers?type=babysitter",
+      "sortOrder": 1,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "b002",
+      "imageUrl": "/images/banner2.jpg",
+      "title": "专业育儿嫂",
+      "subtitle": "科学育儿，陪伴成长",
+      "link": "/pages/workers/workers?type=nanny",
+      "sortOrder": 2,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "b003",
+      "imageUrl": "/images/banner3.jpg",
+      "title": "金牌月嫂",
+      "subtitle": "产后护理，月子餐制作",
+      "link": "/pages/workers/workers?type=maternity",
+      "sortOrder": 3,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+<!-- 星级评分组件 -->
+<view class="star-rating {{size}} {{readonly ? 'readonly' : ''}}">
+  <view 
+    class="star-item {{index < score ? 'active' : ''}} {{index < hoverScore ? 'hover' : ''}}"
+    wx:for="{{stars}}"
+    wx:key="index"
+    data-index="{{index}}"
+    bindtap="onTap"
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+  >
+    <text class="star-icon">★</text>
+  </view>
+  
+  <!-- 分数显示 -->
+  <text class="score-text" wx:if="{{showScore}}">{{currentScore}}分</text>
+</view>

@@ -1,0 +1,55 @@
+<!-- 订单列表页 -->
+<view class="orders-page">
+  <!-- Tab导航 -->
+  <view class="tab-nav">
+    <view 
+      class="tab-item {{currentTab === index ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="index"
+      data-index="{{index}}"
+      bindtap="onTabChange"
+    >
+      <text class="tab-text">{{item.label}}</text>
+      <text class="tab-badge" wx:if="{{item.count > 0}}">{{item.count}}</text>
+    </view>
+  </view>
+  
+  <!-- 订单列表 -->
+  <scroll-view 
+    class="order-list" 
+    scroll-y="{{true}}"
+    scroll-top="{{scrollTop}}"
+    enable-back-to-top="{{true}}"
+    bindscroll="onScroll"
+    bindscrolltolower="onLoadMore"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    refresher-default-style="black"
+    refresher-background="#f5f5f5"
+    bindrefresherrefresh="onRefresh"
+  >
+    <!-- 订单卡片列表 -->
+    <view class="list-content" wx:if="{{orders.length > 0}}">
+      <order-card 
+        wx:for="{{orders}}" 
+        wx:key="id"
+        order="{{item}}"
+        bind:tap="onOrderTap"
+        bind:action="onOrderAction"
+      />
+    </view>
+    
+    <!-- 加载状态 -->
+    <view class="load-status">
+      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..."/>
+      <text class="no-more" wx:if="{{!hasMore && orders.length > 0}}">没有更多了</text>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!isLoading && orders.length === 0}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无{{tabs[currentTab].label}}订单</text>
+      <button class="btn-go" bindtap="onGoBooking">去预约</button>
+    </view>
+  </scroll-view>
+</view>

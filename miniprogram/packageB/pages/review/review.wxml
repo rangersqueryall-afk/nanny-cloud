@@ -1,0 +1,82 @@
+<!-- 评价页面 -->
+<view class="review-page">
+  <!-- 订单信息 -->
+  <view class="order-info card">
+    <image class="worker-avatar" src="{{order.workerAvatar}}" mode="aspectFill"/>
+    <view class="order-detail">
+      <text class="worker-name">{{order.workerName}}</text>
+      <text class="service-info">{{order.serviceType}} · {{order.serviceDate}}</text>
+    </view>
+  </view>
+  
+  <!-- 评分区域 -->
+  <view class="rating-section card">
+    <view class="section-title">服务态度</view>
+    <view class="rating-item">
+      <text class="rating-label">整体评分</text>
+      <star-rating 
+        id="overallRating"
+        value="{{ratings.overall}}" 
+        size="large" 
+        showScore="{{true}}"
+        bind:change="onRatingChange"
+        data-key="overall"
+      />
+    </view>
+  </view>
+  
+  <!-- 评价标签 -->
+  <view class="tags-section card">
+    <view class="section-title">评价标签</view>
+    <view class="tags-list">
+      <view 
+        class="tag-item {{item.selected ? 'selected' : ''}}"
+        wx:for="{{reviewTags}}"
+        wx:key="index"
+        data-index="{{index}}"
+        bindtap="onTagTap"
+      >
+        {{item.name}}
+      </view>
+    </view>
+  </view>
+  
+  <!-- 文字评价 -->
+  <view class="content-section card">
+    <view class="section-title">详细评价</view>
+    <textarea 
+      class="review-textarea" 
+      placeholder="请分享您的服务体验，帮助其他用户更好地了解这位阿姨..."
+      value="{{reviewContent}}"
+      bindinput="onContentInput"
+      maxlength="500"
+    />
+    <view class="textarea-footer">
+      <text class="word-count">{{reviewContent.length}}/500</text>
+    </view>
+  </view>
+  
+  <!-- 匿名评价 -->
+  <view class="anonymous-section card">
+    <view class="anonymous-item">
+      <text class="anonymous-label">匿名评价</text>
+      <switch 
+        class="anonymous-switch" 
+        checked="{{isAnonymous}}"
+        color="#FF6B6B"
+        bindchange="onAnonymousChange"
+      />
+    </view>
+    <text class="anonymous-tip">开启后，您的评价将以匿名方式展示</text>
+  </view>
+  
+  <!-- 底部提交栏 -->
+  <view class="bottom-bar">
+    <button 
+      class="btn-submit {{isSubmitting || !canSubmit ? 'disabled' : ''}}" 
+      bindtap="onSubmit"
+    >
+      {{isSubmitting ? '提交中...' : '提交评价'}}
+    </button>
+  </view>
+</view>

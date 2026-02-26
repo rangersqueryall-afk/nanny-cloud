@@ -1,0 +1,83 @@
+<!-- 筛选栏组件 -->
+<view class="filter-bar">
+  <!-- 筛选选项 -->
+  <view class="filter-options">
+    <view 
+      class="filter-item {{activeIndex === index ? 'active' : ''}}"
+      wx:for="{{filters}}"
+      wx:key="index"
+      data-index="{{index}}"
+      bindtap="onFilterTap"
+    >
+      <text class="filter-text">{{item.selectedLabel || item.label}}</text>
+      <text class="filter-arrow {{activeIndex === index ? 'up' : ''}}">▼</text>
+    </view>
+  </view>
+  
+  <!-- 下拉面板 -->
+  <view class="filter-panel {{showPanel ? 'show' : ''}}" wx:if="{{showPanel}}">
+    <view class="panel-mask" bindtap="onMaskTap"></view>
+    <view class="panel-content">
+      <!-- 列表类型选项 -->
+      <view class="panel-list" wx:if="{{currentFilter.type === 'list'}}">
+        <view 
+          class="list-item {{currentFilter.value === item.value ? 'active' : ''}}"
+          wx:for="{{currentFilter.options}}"
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="onOptionSelect"
+        >
+          <text class="item-text">{{item.label}}</text>
+          <text class="item-check" wx:if="{{currentFilter.value === item.value}}">✓</text>
+        </view>
+      </view>
+      
+      <!-- 范围类型选项 -->
+      <view class="panel-range" wx:if="{{currentFilter.type === 'range'}}">
+        <view class="range-section">
+          <text class="range-title">{{currentFilter.title}}</text>
+          <view class="range-options">
+            <view 
+              class="range-item {{currentFilter.value === item.value ? 'active' : ''}}"
+              wx:for="{{currentFilter.options}}"
+              wx:key="value"
+              data-value="{{item.value}}"
+              bindtap="onOptionSelect"
+            >
+              {{item.label}}
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 自定义范围 -->
+      <view class="panel-custom-range" wx:if="{{currentFilter.type === 'custom-range'}}">
+        <text class="range-title">自定义价格</text>
+        <view class="custom-inputs">
+          <input 
+            class="range-input" 
+            type="digit" 
+            placeholder="最低价"
+            value="{{customMin}}"
+            bindinput="onMinInput"
+          />
+          <text class="range-separator">-</text>
+          <input 
+            class="range-input" 
+            type="digit" 
+            placeholder="最高价"
+            value="{{customMax}}"
+            bindinput="onMaxInput"
+          />
+        </view>
+        <button class="btn-confirm" bindtap="onCustomConfirm">确定</button>
+      </view>
+      
+      <!-- 底部按钮 -->
+      <view class="panel-footer" wx:if="{{currentFilter.showFooter}}">
+        <button class="btn-reset" bindtap="onReset">重置</button>
+        <button class="btn-confirm primary" bindtap="onConfirm">确定</button>
+      </view>
+    </view>
+  </view>
+</view>

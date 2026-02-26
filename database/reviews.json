@@ -1,0 +1,116 @@
+{
+  "collection": "reviews",
+  "description": "用户评价数据",
+  "data": [
+    {
+      "_id": "r001",
+      "workerId": "w001",
+      "userOpenid": "mock_openid_1",
+      "userNickname": "张女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "王阿姨非常专业，做事认真负责，做的饭菜很好吃，宝宝也很喜欢她。强烈推荐！",
+      "tags": ["专业", "认真负责", "做饭好吃"],
+      "createdAt": "2024-02-28T10:00:00.000Z"
+    },
+    {
+      "_id": "r002",
+      "workerId": "w001",
+      "userOpenid": "mock_openid_2",
+      "userNickname": "李先生",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "王阿姨在我们家工作了一年多，非常负责任，家务做得井井有条，对老人也很有耐心。",
+      "tags": ["负责任", "有耐心"],
+      "createdAt": "2024-02-15T14:30:00.000Z"
+    },
+    {
+      "_id": "r003",
+      "workerId": "w001",
+      "userOpenid": "mock_openid_3",
+      "userNickname": "王女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 4,
+      "content": "总体来说不错，就是有时候沟通需要再多一点。",
+      "tags": ["总体不错"],
+      "createdAt": "2024-01-20T09:00:00.000Z"
+    },
+    {
+      "_id": "r004",
+      "workerId": "w002",
+      "userOpenid": "mock_openid_4",
+      "userNickname": "陈女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "李阿姨是金牌月嫂，照顾我和宝宝非常专业，月子餐也很好吃，强烈推荐！",
+      "tags": ["专业", "月子餐好吃", "推荐"],
+      "createdAt": "2024-02-10T11:00:00.000Z"
+    },
+    {
+      "_id": "r005",
+      "workerId": "w002",
+      "userOpenid": "mock_openid_5",
+      "userNickname": "刘先生",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "李阿姨经验丰富，照顾新生儿很有一套，让我们新手爸妈省了不少心。",
+      "tags": ["经验丰富", "专业"],
+      "createdAt": "2024-01-25T16:00:00.000Z"
+    },
+    {
+      "_id": "r006",
+      "workerId": "w003",
+      "userOpenid": "mock_openid_6",
+      "userNickname": "赵女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 4,
+      "content": "张阿姨做事很麻利，家里收拾得干干净净，就是有时候有点急。",
+      "tags": ["做事麻利", "干净"],
+      "createdAt": "2024-02-05T10:30:00.000Z"
+    },
+    {
+      "_id": "r007",
+      "workerId": "w004",
+      "userOpenid": "mock_openid_7",
+      "userNickname": "孙先生",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "陈阿姨川菜做得特别好吃，照顾宝宝也很细心，我们全家都很满意！",
+      "tags": ["川菜好吃", "细心"],
+      "createdAt": "2024-02-20T15:00:00.000Z"
+    },
+    {
+      "_id": "r008",
+      "workerId": "w005",
+      "userOpenid": "mock_openid_8",
+      "userNickname": "周女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "刘阿姨是专业的月嫂，产后恢复指导很到位，月子餐营养又美味。",
+      "tags": ["专业", "月子餐好"],
+      "createdAt": "2024-02-18T09:30:00.000Z"
+    },
+    {
+      "_id": "r009",
+      "workerId": "w006",
+      "userOpenid": "mock_openid_9",
+      "userNickname": "吴先生",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 4,
+      "content": "赵阿姨照顾老人很细心，有经验，就是话不多。",
+      "tags": ["细心", "有经验"],
+      "createdAt": "2024-02-12T14:00:00.000Z"
+    },
+    {
+      "_id": "r010",
+      "workerId": "w007",
+      "userOpenid": "mock_openid_10",
+      "userNickname": "郑女士",
+      "userAvatar": "/images/default-avatar.png",
+      "rating": 5,
+      "content": "孙阿姨很有耐心，和宝宝互动很好，早教启蒙很专业。",
+      "tags": ["有耐心", "早教专业"],
+      "createdAt": "2024-02-22T11:30:00.000Z"
+    }
+  ]
+}

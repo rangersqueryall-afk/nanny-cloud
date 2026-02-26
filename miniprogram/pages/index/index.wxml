@@ -1,0 +1,75 @@
+<!-- 首页 -->
+<view class="index-page">
+  <!-- 顶部搜索栏 -->
+  <view class="search-header">
+    <view class="search-box" bindtap="onSearchTap">
+      <text class="search-icon">🔍</text>
+      <text class="search-placeholder">搜索阿姨姓名、技能...</text>
+    </view>
+  </view>
+  
+  <!-- 轮播图 -->
+  <view class="banner-section">
+    <swiper 
+      class="banner-swiper" 
+      indicator-dots="{{true}}" 
+      autoplay="{{true}}" 
+      interval="3000" 
+      duration="500"
+      circular="{{true}}"
+      indicator-color="rgba(255,255,255,0.5)"
+      indicator-active-color="#FF6B6B"
+    >
+      <swiper-item wx:for="{{banners}}" wx:key="id">
+        <image class="banner-image" src="{{item.image}}" mode="aspectFill" bindtap="onBannerTap" data-item="{{item}}"/>
+      </swiper-item>
+    </swiper>
+  </view>
+  
+  <!-- 服务类型快捷入口 -->
+  <view class="service-types card">
+    <view class="section-title">服务类型</view>
+    <view class="service-grid">
+      <view class="service-item" wx:for="{{serviceTypes}}" wx:key="id" bindtap="onServiceTap" data-type="{{item}}">
+        <view class="service-icon" style="background: {{item.bgColor}}">
+          <text class="icon-text">{{item.icon}}</text>
+        </view>
+        <text class="service-name">{{item.name}}</text>
+        <text class="service-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 服务优势 -->
+  <view class="advantages card">
+    <view class="advantage-item" wx:for="{{advantages}}" wx:key="index">
+      <text class="advantage-icon">{{item.icon}}</text>
+      <text class="advantage-text">{{item.text}}</text>
+    </view>
+  </view>
+  
+  <!-- 推荐阿姨 -->
+  <view class="recommend-section">
+    <view class="section-header">
+      <view class="section-title">推荐阿姨</view>
+      <view class="more-link" bindtap="onMoreTap">
+        <text>查看更多</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+    
+    <!-- 推荐列表 -->
+    <view class="worker-list">
+      <worker-card 
+        wx:for="{{recommendWorkers}}" 
+        wx:key="_id"
+        worker="{{item}}"
+        bind:cardtap="onWorkerTap"
+        bind:book="onBookTap"
+      />
+    </view>
+  </view>
+  
+  <!-- 底部占位 -->
+  <view class="bottom-placeholder"></view>
+</view>

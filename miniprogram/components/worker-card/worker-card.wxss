@@ -1,0 +1,160 @@
+/* 阿姨卡片组件样式 */
+.worker-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+/* 头像区域 */
+.avatar-section {
+  position: relative;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+}
+
+.cert-tag {
+  position: absolute;
+  bottom: -6rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  color: #fff;
+  font-size: 18rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 10rpx;
+  white-space: nowrap;
+}
+
+/* 信息区域 */
+.info-section {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 12rpx;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  color: #FFB800;
+  font-size: 22rpx;
+  margin-right: 4rpx;
+}
+
+.score {
+  font-size: 24rpx;
+  color: #FFB800;
+  font-weight: 500;
+}
+
+.base-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+  flex-wrap: nowrap;
+}
+
+.info-item {
+  font-size: 24rpx;
+  color: #666;
+  white-space: nowrap;
+}
+
+.divider {
+  margin: 0 10rpx;
+  color: #ddd;
+  font-size: 20rpx;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 10rpx;
+}
+
+.tag {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 6rpx;
+  margin-right: 8rpx;
+  margin-bottom: 4rpx;
+  white-space: nowrap;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  color: #FF6B6B;
+}
+
+.price-unit {
+  font-size: 20rpx;
+}
+
+.price-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin: 0 2rpx;
+}
+
+.order-count {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 操作区域 */
+.action-section {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+  height: 120rpx;
+}
+
+.btn-book {
+  width: 80rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  color: #fff;
+  font-size: 22rpx;
+  border-radius: 24rpx;
+  text-align: center;
+}
+
+.btn-book:active {
+  opacity: 0.9;
+}

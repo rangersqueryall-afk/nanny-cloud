@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "评价",
+  "navigationBarBackgroundColor": "#FF6B6B",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "usingComponents": {
+    "star-rating": "/components/star-rating/star-rating"
+  }
+}

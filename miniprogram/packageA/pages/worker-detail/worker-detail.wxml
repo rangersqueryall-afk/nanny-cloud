@@ -1,0 +1,141 @@
+<!-- 阿姨详情页 -->
+<view class="worker-detail-page">
+  <!-- 基本信息卡片 -->
+  <view class="info-card card">
+    <view class="basic-info">
+      <image class="avatar-large" src="{{worker.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
+      <view class="info-content">
+        <view class="name-row">
+          <text class="name">{{worker.name}}</text>
+          <view class="cert-badge" wx:if="{{worker.isVerified}}">已认证</view>
+        </view>
+        <view class="base-tags">
+          <text class="tag">{{worker.age}}岁</text>
+          <text class="tag">{{worker.hometown}}</text>
+          <text class="tag">{{worker.experience}}年经验</text>
+        </view>
+        <view class="rating-row">
+          <star-rating value="{{worker.rating}}" size="small" readonly="{{true}}"/>
+          <text class="rating-text">{{worker.rating}}分</text>
+          <text class="order-count">已接{{worker.orderCount}}单</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 价格信息 -->
+    <view class="price-section">
+      <view class="price-item">
+        <text class="price-label">月薪</text>
+        <view class="price-value">
+          <text class="unit">¥</text>
+          <text class="value">{{worker.price.monthly}}</text>
+        </view>
+      </view>
+      <view class="divider-v"></view>
+      <view class="price-item">
+        <text class="price-label">日薪</text>
+        <view class="price-value">
+          <text class="unit">¥</text>
+          <text class="value">{{worker.price.daily}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 技能标签 -->
+  <view class="skills-card card">
+    <view class="card-title">专业技能</view>
+    <view class="skills-list">
+      <text class="skill-tag" wx:for="{{worker.skills}}" wx:key="index">{{item}}</text>
+    </view>
+  </view>
+  
+  <!-- 服务类型 -->
+  <view class="service-types-card card">
+    <view class="card-title">服务类型</view>
+    <view class="service-list">
+      <view class="service-item" wx:for="{{worker.serviceTypesText}}" wx:key="index">
+        <text class="service-icon">✓</text>
+        <text class="service-name">{{item}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 个人简介 -->
+  <view class="intro-card card">
+    <view class="card-title">个人简介</view>
+    <text class="intro-text">{{worker.introduction || '暂无简介'}}</text>
+  </view>
+  
+  <!-- 工作经历 -->
+  <view class="experience-card card">
+    <view class="card-title">工作经历</view>
+    <view class="experience-list">
+      <view class="experience-item" wx:for="{{worker.experiences}}" wx:key="index">
+        <view class="exp-header">
+          <text class="exp-title">{{item.title}}</text>
+          <text class="exp-period">{{item.period}}</text>
+        </view>
+        <text class="exp-desc">{{item.description}}</text>
+      </view>
+      <view class="no-data" wx:if="{{!worker.experiences || worker.experiences.length === 0}}">
+        暂无工作经历
+      </view>
+    </view>
+  </view>
+  
+  <!-- 用户评价 -->
+  <view class="reviews-card card">
+    <view class="card-header">
+      <view class="card-title">用户评价({{reviews.length}})</view>
+      <view class="rating-summary">
+        <text class="avg-rating">{{worker.rating}}</text>
+        <star-rating value="{{worker.rating}}" size="small" readonly="{{true}}"/>
+      </view>
+    </view>
+    
+    <view class="review-list">
+      <view class="review-item" wx:for="{{reviews}}" wx:key="id">
+        <view class="reviewer-info">
+          <image class="reviewer-avatar" src="{{item.userAvatar}}" mode="aspectFill"/>
+          <view class="reviewer-meta">
+            <text class="reviewer-name">{{item.userName}}</text>
+            <star-rating value="{{item.rating}}" size="small" readonly="{{true}}"/>
+          </view>
+          <text class="review-date">{{item.date}}</text>
+        </view>
+        <text class="review-content">{{item.content}}</text>
+        <view class="review-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+          <text class="review-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="index">{{tag}}</text>
+        </view>
+      </view>
+      
+      <view class="no-data" wx:if="{{reviews.length === 0}}">
+        暂无评价
+      </view>
+    </view>
+    
+    <view class="more-reviews" wx:if="{{reviews.length > 3}}" bindtap="onMoreReviews">
+      <text>查看更多评价</text>
+      <text class="arrow">></text>
+    </view>
+  </view>
+  
+  <!-- 底部占位 -->
+  <view class="bottom-placeholder"></view>
+  
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="action-left">
+      <view class="action-item" bindtap="onCollect">
+        <text class="action-icon">{{isCollected ? '★' : '☆'}}</text>
+        <text class="action-text">{{isCollected ? '已收藏' : '收藏'}}</text>
+      </view>
+      <view class="action-item" bindtap="onContact">
+        <text class="action-icon">📞</text>
+        <text class="action-text">咨询</text>
+      </view>
+    </view>
+    <button class="btn-book" bindtap="onBook">立即预约</button>
+  </view>
+</view>

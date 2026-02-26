@@ -1,0 +1,124 @@
+.favorites-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.favorites-list {
+  height: 100vh;
+}
+
+.list-content {
+  padding: 20rpx 24rpx 0;
+}
+
+.favorite-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.main {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.info {
+  margin-left: 18rpx;
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.time {
+  margin-top: 8rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20rpx;
+}
+
+.btn {
+  margin: 0;
+  height: 60rpx;
+  line-height: 60rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  padding: 0 24rpx;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn-detail {
+  background: #fff1f1;
+  color: #ff6b6b;
+}
+
+.btn-remove {
+  margin-left: 16rpx;
+  background: #f6f6f6;
+  color: #666;
+}
+
+.load-status {
+  padding: 24rpx 0 40rpx;
+  text-align: center;
+}
+
+.no-more {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.empty-state {
+  padding: 180rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  display: block;
+  font-size: 88rpx;
+}
+
+.empty-text {
+  margin-top: 20rpx;
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.btn-go {
+  margin-top: 28rpx;
+  width: 280rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 36rpx;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.btn-go::after {
+  border: none;
+}

@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "找阿姨",
+  "navigationBarBackgroundColor": "#FF6B6B",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "usingComponents": {
+    "worker-card": "/components/worker-card/worker-card",
+    "filter-bar": "/components/filter-bar/filter-bar",
+    "loading": "/components/loading/loading"
+  }
+}

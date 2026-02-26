@@ -1,0 +1,402 @@
+/* 阿姨详情页样式 */
+.worker-detail-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 140rpx;
+}
+
+/* 通用卡片样式 */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx 30rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.card-header .card-title {
+  margin-bottom: 0;
+}
+
+/* 基本信息 */
+.basic-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+}
+
+.avatar-large {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  object-fit: cover;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 16rpx;
+}
+
+.cert-badge {
+  background: linear-gradient(135deg, #52C41A, #389E0D);
+  color: #fff;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.base-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.base-tags .tag {
+  background: #f5f5f5;
+  color: #666;
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+}
+
+.rating-text {
+  font-size: 26rpx;
+  color: #FFB800;
+  margin-left: 12rpx;
+  margin-right: 16rpx;
+}
+
+.order-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 价格信息 */
+.price-section {
+  display: flex;
+  align-items: center;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.price-item {
+  flex: 1;
+  text-align: center;
+}
+
+.price-label {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.price-value {
+  color: #FF6B6B;
+}
+
+.price-value .unit {
+  font-size: 24rpx;
+}
+
+.price-value .value {
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+.divider-v {
+  width: 1rpx;
+  height: 60rpx;
+  background: #f0f0f0;
+}
+
+/* 技能标签 */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.skill-tag {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+  font-size: 26rpx;
+  padding: 10rpx 24rpx;
+  border-radius: 8rpx;
+}
+
+/* 服务类型 */
+.service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 12rpx 24rpx;
+  border-radius: 8rpx;
+}
+
+.service-icon {
+  color: #52C41A;
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.service-name {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 个人简介 */
+.intro-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+}
+
+/* 工作经历 */
+.experience-list {
+  padding-left: 20rpx;
+  border-left: 4rpx solid #f0f0f0;
+}
+
+.experience-item {
+  position: relative;
+  padding-bottom: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.experience-item::before {
+  content: '';
+  position: absolute;
+  left: -28rpx;
+  top: 8rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background: #FF6B6B;
+  border-radius: 50%;
+}
+
+.exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.exp-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.exp-period {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.exp-desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 用户评价 */
+.rating-summary {
+  display: flex;
+  align-items: center;
+}
+
+.avg-rating {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #FF6B6B;
+  margin-right: 12rpx;
+}
+
+.review-list {
+  margin-top: 20rpx;
+}
+
+.review-item {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.reviewer-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.reviewer-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.reviewer-meta {
+  flex: 1;
+}
+
+.reviewer-name {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.review-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.review-content {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.review-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.review-tag {
+  background: #f5f5f5;
+  color: #666;
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 6rpx;
+}
+
+.more-reviews {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0 0;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.arrow {
+  margin-left: 8rpx;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 26rpx;
+}
+
+/* 底部占位 */
+.bottom-placeholder {
+  height: 40rpx;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.action-left {
+  display: flex;
+  margin-right: 30rpx;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24rpx;
+}
+
+.action-icon {
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.action-text {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.btn-book {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(135deg, #FF6B6B, #E55A5A);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 44rpx;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.btn-book::after {
+  border: none;
+}
+
+.btn-book:active {
+  opacity: 0.9;
+}

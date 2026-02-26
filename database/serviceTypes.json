@@ -1,0 +1,66 @@
+{
+  "collection": "serviceTypes",
+  "description": "服务类型数据",
+  "data": [
+    {
+      "_id": "st001",
+      "id": "babysitter",
+      "name": "保姆",
+      "icon": "/images/icon-babysitter.png",
+      "description": "日常家务、做饭、照顾家人",
+      "priceRange": "6000-8000元/月",
+      "sortOrder": 1,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "st002",
+      "id": "nanny",
+      "name": "育儿嫂",
+      "icon": "/images/icon-nanny.png",
+      "description": "婴幼儿护理、早教启蒙",
+      "priceRange": "7500-10000元/月",
+      "sortOrder": 2,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "st003",
+      "id": "maternity",
+      "name": "月嫂",
+      "icon": "/images/icon-maternity.png",
+      "description": "产妇护理、月子餐、新生儿护理",
+      "priceRange": "9800-15000元/月",
+      "sortOrder": 3,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "st004",
+      "id": "hourly",
+      "name": "钟点工",
+      "icon": "/images/icon-hourly.png",
+      "description": "按小时计费，灵活安排",
+      "priceRange": "35-50元/小时",
+      "sortOrder": 4,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "st005",
+      "id": "elderly",
+      "name": "老人陪护",
+      "icon": "/images/icon-elderly.png",
+      "description": "陪伴老人、日常照料",
+      "priceRange": "5000-7000元/月",
+      "sortOrder": 5,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

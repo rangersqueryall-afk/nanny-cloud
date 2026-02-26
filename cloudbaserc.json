@@ -1,0 +1,41 @@
+{
+  "envId": "YOUR_ENV_ID",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "user",
+      "config": {
+        "timeout": 10,
+        "memorySize": 256
+      }
+    },
+    {
+      "name": "worker",
+      "config": {
+        "timeout": 10,
+        "memorySize": 256
+      }
+    },
+    {
+      "name": "order",
+      "config": {
+        "timeout": 10,
+        "memorySize": 256
+      }
+    },
+    {
+      "name": "review",
+      "config": {
+        "timeout": 10,
+        "memorySize": 256
+      }
+    },
+    {
+      "name": "home",
+      "config": {
+        "timeout": 10,
+        "memorySize": 256
+      }
+    }
+  ]
+}

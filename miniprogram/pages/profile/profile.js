@@ -1,0 +1,542 @@
+/**
+ * 个人中心页面
+ * 用户信息展示和功能入口
+ */
+const app = getApp();
+
+Page({
+  /**
+   * 页面初始数据
+   */
+  data: {
+    // 登录状态
+    isLogin: false,
+    isWorker: false,
+    workerInfo: null,
+    
+    // 用户信息
+    userInfo: {
+      avatarUrl: '',
+      nickName: '',
+      phone: ''
+    },
+    nameInputFocus: false,
+    
+    // 订单统计
+    orderStats: {
+      all: 0,
+      pending: 0,
+      serving: 0,
+      completed: 0
+    }
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad(options) {
+    // 检查登录状态
+    this.checkLoginStatus();
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 1
+      });
+    }
+    
+    // 刷新数据
+    if (this.data.isLogin) {
+      this.loadUserInfo();
+      this.loadOrderStats();
+    }
+  },
+
+  /**
+   * 检查登录状态
+   */
+  checkLoginStatus() {
+    const userInfo = app.globalData.userInfo;
+    
+    this.setData({
+      isLogin: app.globalData.isLogin,
+      userInfo: {
+        avatarUrl: userInfo && userInfo.avatar ? userInfo.avatar : '',
+        nickName: userInfo && userInfo.nickname ? userInfo.nickname : '',
+        phone: userInfo && userInfo.phone ? userInfo.phone : ''
+      }
+    });
+
+    if (app.globalData.isLogin) {
+      this.loadUserInfo();
+    }
+    
+    // 加载订单统计（无论是否登录都显示）
+    this.loadOrderStats();
+  },
+
+  /**
+   * 加载用户信息
+   */
+  loadUserInfo() {
+    app.callCloudFunction('user', 'getProfile')
+      .then((res) => {
+        const userData = res.data;
+        this.setData({
+          isWorker: userData.role === 'worker',
+          workerInfo: userData.workerInfo,
+          userInfo: {
+            avatarUrl: userData.avatar,
+            nickName: userData.nickname,
+            phone: userData.phone || ''
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('获取用户信息失败:', err);
+      });
+  },
+
+  /**
+   * 加载订单统计
+   */
+  loadOrderStats() {
+    // 未登录时显示0
+    if (!this.data.isLogin) {
+      this.setData({
+        orderStats: {
+          all: 0,
+          pending: 0,
+          serving: 0,
+          completed: 0
+        }
+      });
+      return;
+    }
+    
+    // 调用云函数获取订单统计
+    app.callCloudFunction('order', 'getStats', {})
+      .then((res) => {
+        const stats = res.data || {};
+        this.setData({
+          orderStats: {
+            all: stats.all || 0,
+            pending: stats.pending || 0,
+            serving: stats.serving || 0,
+            completed: stats.completed || 0
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('获取订单统计失败:', err);
+        // 云函数未部署时使用模拟数据
+        const orderStats = this.calculateOrderStats();
+        this.setData({ orderStats });
+      });
+  },
+
+  /**
+   * 计算订单统计数量（模拟数据）
+   */
+  calculateOrderStats() {
+    // 预定义订单数据（与orders页面保持一致）
+    const baseOrders = [
+      { id: 1, status: 'pending' },
+      { id: 2, status: 'confirmed' },
+      { id: 3, status: 'serving' },
+      { id: 4, status: 'completed' },
+      { id: 5, status: 'completed' },
+      { id: 6, status: 'pending' },
+      { id: 7, status: 'serving' },
+      { id: 8, status: 'completed' },
+      { id: 9, status: 'cancelled' },
+      { id: 10, status: 'confirmed' },
+      { id: 11, status: 'completed' },
+      { id: 12, status: 'pending' }
+    ];
+    
+    return {
+      all: baseOrders.length,
+      pending: baseOrders.filter(o => o.status === 'pending' || o.status === 'confirmed').length,
+      serving: baseOrders.filter(o => o.status === 'serving').length,
+      completed: baseOrders.filter(o => o.status === 'completed').length
+    };
+  },
+
+  /**
+   * 登录 - 获取微信用户信息后登录
+   */
+  onLogin() {
+    wx.showLoading({ title: '登录中...' });
+    
+    // 获取微信用户信息
+    wx.getUserProfile({
+      desc: '用于完善用户资料',
+      success: (userRes) => {
+        const userInfo = userRes.userInfo;
+        const nickName = (userInfo && userInfo.nickName) || '';
+        const avatarUrl = (userInfo && userInfo.avatarUrl) || '/images/default-avatar.png';
+        
+        // 调用云函数登录，传入微信头像和昵称
+        const loginData = {
+          nickName,
+          avatarUrl
+        };
+        
+        app.callCloudFunction('user', 'login', loginData)
+          .then((loginRes) => {
+            wx.hideLoading();
+            
+            const data = loginRes.data;
+            
+            app.globalData.userInfo = data.userInfo;
+            app.globalData.isLogin = true;
+            wx.setStorageSync('userInfo', data.userInfo);
+            
+            this.setData({
+              isLogin: true,
+              isWorker: data.userInfo.role === 'worker',
+              workerInfo: data.workerInfo,
+              userInfo: {
+                avatarUrl: data.userInfo.avatar,
+                nickName: data.userInfo.nickname,
+                phone: data.userInfo.phone || ''
+              }
+            });
+            
+            // 登录成功后加载订单统计
+            this.loadOrderStats();
+            
+            wx.showToast({
+              title: '登录成功',
+              icon: 'success'
+            });
+
+            // 新版微信可能不会直接返回真实头像昵称，登录后引导补全
+            const isDefaultName = !data.userInfo.nickname || data.userInfo.nickname === '微信用户';
+            const isDefaultAvatar = !data.userInfo.avatar || data.userInfo.avatar === '/images/default-avatar.png';
+            if (isDefaultName || isDefaultAvatar) {
+              setTimeout(() => {
+                wx.showModal({
+                  title: '完善资料',
+                  content: '请点击头像选择微信头像，并在昵称输入框填写昵称，以同步真实微信资料。',
+                  showCancel: false,
+                  confirmText: '我知道了'
+                });
+              }, 400);
+            }
+          })
+          .catch((err) => {
+            wx.hideLoading();
+            console.error('登录失败:', err);
+            
+            // 云函数失败时使用本地模拟登录
+            if (err.message && (err.message.includes('云函数未正确部署') || err.message.includes('云函数返回格式错误'))) {
+              console.log('使用本地模拟登录');
+              this.mockLogin(userInfo);
+            } else {
+              wx.showToast({
+                title: err.message || '登录失败，请重试',
+                icon: 'none'
+              });
+            }
+          });
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('获取用户信息失败:', err);
+        wx.showToast({
+          title: '请授权获取用户信息',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  /**
+   * 本地模拟登录（云函数未部署时使用）
+   */
+  mockLogin() {
+    const mockUserInfo = {
+      _id: 'mock_user_' + Date.now(),
+      nickname: '微信用户',
+      avatar: '/images/default-avatar.png',
+      phone: '',
+      role: 'user',
+      workerId: null
+    };
+    
+    app.globalData.userInfo = mockUserInfo;
+    app.globalData.isLogin = true;
+    wx.setStorageSync('userInfo', mockUserInfo);
+    
+    this.setData({
+      isLogin: true,
+      isWorker: false,
+      workerInfo: null,
+      userInfo: {
+        avatarUrl: mockUserInfo.avatar,
+        nickName: mockUserInfo.nickname,
+        phone: ''
+      }
+    });
+    
+    // 登录成功后加载订单统计
+    this.loadOrderStats();
+    
+    wx.showToast({
+      title: '登录成功',
+      icon: 'success'
+    });
+  },
+
+  /**
+   * 选择头像
+   */
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail;
+    
+    // 上传头像到云存储
+    wx.cloud.uploadFile({
+      cloudPath: `avatars/user_${Date.now()}.jpg`,
+      filePath: avatarUrl,
+      success: (uploadRes) => {
+        // 更新用户信息
+        app.callCloudFunction('user', 'updateProfile', {
+          avatar: uploadRes.fileID
+        })
+        .then(() => {
+          this.setData({
+            'userInfo.avatarUrl': uploadRes.fileID
+          });
+          app.globalData.userInfo.avatar = uploadRes.fileID;
+          wx.setStorageSync('userInfo', app.globalData.userInfo);
+          app.showToast('头像已更新', 'success');
+        })
+        .catch((err) => {
+          app.showToast('更新失败');
+        });
+      },
+      fail: () => {
+        app.showToast('上传失败');
+      }
+    });
+  },
+
+  /**
+   * 修改昵称
+   */
+  onNicknameChange(e) {
+    const nickName = e.detail.value;
+    if (!nickName || !nickName.trim()) return;
+    
+    app.callCloudFunction('user', 'updateProfile', {
+      nickname: nickName
+    })
+    .then(() => {
+      this.setData({
+        'userInfo.nickName': nickName
+      });
+      if (app.globalData.userInfo) {
+        app.globalData.userInfo.nickname = nickName;
+        wx.setStorageSync('userInfo', app.globalData.userInfo);
+      }
+      app.showToast('昵称已更新', 'success');
+    })
+    .catch((err) => {
+      app.showToast('更新失败');
+    });
+  },
+
+  onNameEditTap() {
+    this.setData({
+      nameInputFocus: true
+    });
+  },
+
+  onNameInputBlur() {
+    if (this.data.nameInputFocus) {
+      this.setData({
+        nameInputFocus: false
+      });
+    }
+  },
+
+  /**
+   * 点击订单统计
+   */
+  onOrderTap(e) {
+    const { status } = e.currentTarget.dataset;
+    
+    // 未登录时弹出登录弹框
+    if (!this.data.isLogin) {
+      wx.showModal({
+        title: '提示',
+        content: '请先登录后查看订单',
+        confirmText: '去登录',
+        success: (res) => {
+          if (res.confirm) {
+            // 执行登录
+            this.onLogin();
+          }
+        }
+      });
+      return;
+    }
+    
+    // 映射状态到订单页面的tab索引
+    const statusMap = {
+      'all': 0,
+      'pending': 1,
+      'serving': 2,
+      'completed': 3
+    };
+    const tabIndex = statusMap[status] || 0;
+    
+    wx.navigateTo({
+      url: `/pages/orders/orders?tabIndex=${tabIndex}`
+    });
+  },
+
+  /**
+   * 点击菜单项
+   */
+  onMenuTap(e) {
+    const { page } = e.currentTarget.dataset;
+    
+    switch (page) {
+
+      case 'favorites':
+        if (!this.data.isLogin) {
+          app.showToast('请先登录');
+          return;
+        }
+        wx.navigateTo({
+          url: '/packageB/pages/favorites/favorites'
+        });
+        break;
+      case 'address':
+        app.showToast('功能开发中');
+        break;
+      case 'contact':
+        this.handleContact();
+        break;
+      case 'feedback':
+        app.showToast('功能开发中');
+        break;
+      case 'about':
+        app.showToast('功能开发中');
+        break;
+      case 'settings':
+        app.showToast('功能开发中');
+        break;
+    }
+  },
+
+  /**
+   * 联系客服
+   */
+  handleContact() {
+    wx.showModal({
+      title: '联系客服',
+      content: '客服电话：400-888-8888\n服务时间：9:00-21:00',
+      confirmText: '拨打',
+      success: (res) => {
+        if (res.confirm) {
+          wx.makePhoneCall({
+            phoneNumber: '4008888888'
+          });
+        }
+      }
+    });
+  },
+
+  /**
+   * 注册为阿姨
+   */
+  onRegisterWorker() {
+    if (!this.data.isLogin) {
+      app.showToast('请先登录');
+      return;
+    }
+    
+    wx.navigateTo({
+      url: '/packageA/pages/worker-register/worker-register'
+    });
+  },
+
+  /**
+   * 查看我的阿姨信息
+   */
+  onMyWorkerInfo() {
+    if (!this.data.isLogin) {
+      app.showToast('请先登录');
+      return;
+    }
+    
+    app.showToast('功能开发中');
+  },
+
+  /**
+   * 切换阿姨信息开放/隐藏状态
+   */
+  onToggleWorkerStatus() {
+    if (!this.data.isLogin) {
+      app.showToast('请先登录');
+      return;
+    }
+    
+    const { workerInfo } = this.data;
+    const newStatus = !workerInfo.isPublic;
+    
+    app.callCloudFunction('user', 'updateWorkerStatus', {
+      isPublic: newStatus
+    })
+    .then((res) => {
+      this.setData({
+        'workerInfo.isPublic': newStatus
+      });
+      app.showToast(res.message);
+    })
+    .catch((err) => {
+      app.showToast(err.message || '操作失败');
+    });
+  },
+
+  /**
+   * 退出登录
+   */
+  onLogout() {
+    wx.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          // 清除登录信息
+          app.globalData.userInfo = null;
+          app.globalData.isLogin = false;
+          
+          this.setData({
+            isLogin: false,
+            isWorker: false,
+            workerInfo: null,
+            userInfo: {
+              avatarUrl: '',
+              nickName: '',
+              phone: ''
+            }
+          });
+          
+          wx.showToast({
+            title: '已退出登录',
+            icon: 'success'
+          });
+        }
+      }
+    });
+  }
+});

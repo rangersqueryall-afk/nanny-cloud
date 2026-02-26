@@ -1,0 +1,72 @@
+/* 星级评分组件样式 */
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+}
+
+.star-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.star-item:not(.readonly):active {
+  transform: scale(0.9);
+}
+
+.star-icon {
+  color: #ddd;
+  transition: color 0.2s ease;
+}
+
+.star-item.active .star-icon,
+.star-item.hover .star-icon {
+  color: #FFB800;
+}
+
+/* 尺寸样式 */
+.star-rating.small .star-item {
+  font-size: 24rpx;
+  margin-right: 4rpx;
+}
+
+.star-rating.medium .star-item {
+  font-size: 36rpx;
+  margin-right: 8rpx;
+}
+
+.star-rating.large .star-item {
+  font-size: 48rpx;
+  margin-right: 12rpx;
+}
+
+/* 分数显示 */
+.score-text {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: #FFB800;
+  font-weight: 500;
+}
+
+.star-rating.small .score-text {
+  font-size: 22rpx;
+}
+
+.star-rating.large .score-text {
+  font-size: 32rpx;
+}
+
+/* 只读模式 */
+.star-rating.readonly .star-item {
+  cursor: default;
+}
+
+/* 半星支持（使用背景渐变实现） */
+.star-item.half .star-icon {
+  background: linear-gradient(90deg, #FFB800 50%, #ddd 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

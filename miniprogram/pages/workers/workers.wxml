@@ -1,0 +1,67 @@
+<!-- 阿姨列表页 -->
+<view class="workers-page">
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        type="text" 
+        placeholder="搜索阿姨姓名、技能..."
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearch"
+      />
+      <text class="clear-icon" wx:if="{{searchKeyword}}" bindtap="onClearSearch">✕</text>
+    </view>
+  </view>
+  
+  <!-- 筛选栏 -->
+  <filter-bar 
+    id="filterBar"
+    filterConfig="{{filterConfig}}"
+    bind:change="onFilterChange"
+    bind:reset="onFilterReset"
+    bind:confirm="onFilterConfirm"
+  />
+  
+  <!-- 阿姨列表 -->
+  <scroll-view 
+    class="worker-list" 
+    scroll-y="{{true}}" 
+    scroll-top="{{scrollTop}}"
+    enable-back-to-top="{{true}}"
+    bindscroll="onScroll"
+    bindscrolltolower="onLoadMore"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    refresher-default-style="black"
+    refresher-background="#f5f5f5"
+    bindrefresherrefresh="onRefresh"
+  >
+    <!-- 列表内容 -->
+    <view class="list-content">
+      <worker-card 
+        wx:for="{{workers}}" 
+        wx:key="_id"
+        worker="{{item}}"
+        bind:cardtap="onWorkerTap"
+        bind:book="onBookTap"
+      />
+    </view>
+    
+    <!-- 加载状态 -->
+    <view class="load-status">
+      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..."/>
+      <text class="no-more" wx:if="{{!hasMore && workers.length > 0}}">没有更多了</text>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!isLoading && workers.length === 0}}">
+      <text class="empty-icon">🔍</text>
+      <text class="empty-text">没有找到相关阿姨</text>
+      <text class="empty-tip">试试其他搜索条件</text>
+    </view>
+  </scroll-view>
+</view>
