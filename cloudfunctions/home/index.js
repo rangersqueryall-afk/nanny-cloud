@@ -38,7 +38,7 @@ async function getBanners() {
 }
 
 async function getRecommendations(data) {
-  const limit = data && data.limit ? data.limit : 6;
+  const limit = data && data.limit ? data.limit : 8;
 
   const workerRes = await db.collection('workers')
     .where({ isPublic: true, isVerified: true })

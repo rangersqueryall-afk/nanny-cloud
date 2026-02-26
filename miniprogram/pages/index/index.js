@@ -123,7 +123,7 @@ Page({
     this.setData({ loading: true });
     
     // 调用云函数获取推荐阿姨
-    app.callCloudFunction('home', 'getRecommendations', { limit: 6 })
+    app.callCloudFunction('home', 'getRecommendations', { limit: 8 })
       .then((res) => {
         console.log('推荐阿姨数据:', res.data);
         this.setData({

@@ -202,7 +202,7 @@ App({
   /**
    * 统一联系客服弹窗
    * @param {object} options
-   * @param {string} options.phoneNumber - 客服电话（默认4008888888）
+   * @param {string} options.phoneNumber - 客服电话
    * @param {string} options.title - 弹窗标题
    * @param {string} options.content - 弹窗文案
    * @param {string} options.confirmText - 确认按钮文案
