@@ -133,38 +133,15 @@ Page({
       })
       .catch((err) => {
         console.error('获取订单统计失败:', err);
-        // 云函数未部署时使用模拟数据
-        const orderStats = this.calculateOrderStats();
-        this.setData({ orderStats });
+        this.setData({
+          orderStats: {
+            all: 0,
+            pending: 0,
+            serving: 0,
+            completed: 0
+          }
+        });
       });
-  },
-
-  /**
-   * 计算订单统计数量（模拟数据）
-   */
-  calculateOrderStats() {
-    // 预定义订单数据（与orders页面保持一致）
-    const baseOrders = [
-      { id: 1, status: 'pending' },
-      { id: 2, status: 'confirmed' },
-      { id: 3, status: 'serving' },
-      { id: 4, status: 'completed' },
-      { id: 5, status: 'completed' },
-      { id: 6, status: 'pending' },
-      { id: 7, status: 'serving' },
-      { id: 8, status: 'completed' },
-      { id: 9, status: 'cancelled' },
-      { id: 10, status: 'confirmed' },
-      { id: 11, status: 'completed' },
-      { id: 12, status: 'pending' }
-    ];
-    
-    return {
-      all: baseOrders.length,
-      pending: baseOrders.filter(o => o.status === 'pending' || o.status === 'confirmed').length,
-      serving: baseOrders.filter(o => o.status === 'serving').length,
-      completed: baseOrders.filter(o => o.status === 'completed').length
-    };
   },
 
   /**
@@ -233,17 +210,10 @@ Page({
           .catch((err) => {
             wx.hideLoading();
             console.error('登录失败:', err);
-            
-            // 云函数失败时使用本地模拟登录
-            if (err.message && (err.message.includes('云函数未正确部署') || err.message.includes('云函数返回格式错误'))) {
-              console.log('使用本地模拟登录');
-              this.mockLogin(userInfo);
-            } else {
-              wx.showToast({
-                title: err.message || '登录失败，请重试',
-                icon: 'none'
-              });
-            }
+            wx.showToast({
+              title: err.message || '登录失败，请重试',
+              icon: 'none'
+            });
           });
       },
       fail: (err) => {
@@ -254,43 +224,6 @@ Page({
           icon: 'none'
         });
       }
-    });
-  },
-
-  /**
-   * 本地模拟登录（云函数未部署时使用）
-   */
-  mockLogin() {
-    const mockUserInfo = {
-      _id: 'mock_user_' + Date.now(),
-      nickname: '微信用户',
-      avatar: '/images/default-avatar.png',
-      phone: '',
-      role: 'user',
-      workerId: null
-    };
-    
-    app.globalData.userInfo = mockUserInfo;
-    app.globalData.isLogin = true;
-    wx.setStorageSync('userInfo', mockUserInfo);
-    
-    this.setData({
-      isLogin: true,
-      isWorker: false,
-      workerInfo: null,
-      userInfo: {
-        avatarUrl: mockUserInfo.avatar,
-        nickName: mockUserInfo.nickname,
-        phone: ''
-      }
-    });
-    
-    // 登录成功后加载订单统计
-    this.loadOrderStats();
-    
-    wx.showToast({
-      title: '登录成功',
-      icon: 'success'
     });
   },
 
@@ -419,6 +352,15 @@ Page({
           url: '/packageB/pages/favorites/favorites'
         });
         break;
+      case 'bookings':
+        if (!this.data.isLogin) {
+          app.showToast('请先登录');
+          return;
+        }
+        wx.navigateTo({
+          url: '/packageB/pages/bookings/bookings'
+        });
+        break;
       case 'address':
         app.showToast('功能开发中');
         break;
@@ -441,17 +383,8 @@ Page({
    * 联系客服
    */
   handleContact() {
-    wx.showModal({
-      title: '联系客服',
-      content: '客服电话：400-888-8888\n服务时间：9:00-21:00',
-      confirmText: '拨打',
-      success: (res) => {
-        if (res.confirm) {
-          wx.makePhoneCall({
-            phoneNumber: '4008888888'
-          });
-        }
-      }
+    app.contactService({
+      content: '客服电话：400-888-8888\n服务时间：9:00-21:00'
     });
   },
 
@@ -477,8 +410,10 @@ Page({
       app.showToast('请先登录');
       return;
     }
-    
-    app.showToast('功能开发中');
+
+    wx.navigateTo({
+      url: '/packageA/pages/my-worker-info/my-worker-info'
+    });
   },
 
   /**

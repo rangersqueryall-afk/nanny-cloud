@@ -35,6 +35,8 @@ exports.main = async (event, context) => {
       return await updateWorkerStatus(OPENID, data);
     } else if (action === 'getMyWorkerInfo') {
       return await getMyWorkerInfo(OPENID);
+    } else if (action === 'updateMyWorkerInfo') {
+      return await updateMyWorkerInfo(OPENID, data);
     } else {
       return { success: false, message: '未知操作: ' + action };
     }
@@ -326,6 +328,53 @@ async function getMyWorkerInfo(openid) {
     return { success: true, data: workerInfo, message: '获取成功' };
   } catch (error) {
     console.error('getMyWorkerInfo函数错误:', error);
+    return { success: false, message: error.message };
+  }
+}
+
+async function updateMyWorkerInfo(openid, data) {
+  try {
+    const userRes = await db.collection('users').where({ openid: openid }).get();
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' };
+    }
+    const user = userRes.data[0];
+
+    if (user.role !== 'worker' || !user.workerId) {
+      return { success: false, message: '您不是阿姨' };
+    }
+
+    const updateData = { updatedAt: db.serverDate() };
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.avatar !== undefined) updateData.avatar = data.avatar;
+    if (data.age !== undefined) updateData.age = data.age;
+    if (data.hometown !== undefined) updateData.hometown = data.hometown;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.experience !== undefined) updateData.experience = data.experience;
+    if (data.serviceTypes !== undefined) updateData.serviceTypes = data.serviceTypes;
+    if (data.skills !== undefined) updateData.skills = data.skills;
+    if (data.priceMonthly !== undefined || data.priceDaily !== undefined) {
+      const workerRes = await db.collection('workers').doc(user.workerId).get();
+      const oldPrice = workerRes.data && workerRes.data.price ? workerRes.data.price : {};
+      updateData.price = {
+        monthly: data.priceMonthly !== undefined ? data.priceMonthly : (oldPrice.monthly || 0),
+        daily: data.priceDaily !== undefined ? data.priceDaily : (oldPrice.daily || 0)
+      };
+    }
+    if (data.bio !== undefined) updateData.bio = data.bio;
+    if (data.isVerified !== undefined) updateData.isVerified = !!data.isVerified;
+    if (data.isPublic !== undefined) {
+      updateData.isPublic = !!data.isPublic;
+      updateData.status = data.isPublic ? 'available' : 'offline';
+    }
+
+    await db.collection('workers').doc(user.workerId).update({
+      data: updateData
+    });
+
+    return { success: true, message: '更新成功' };
+  } catch (error) {
+    console.error('updateMyWorkerInfo函数错误:', error);
     return { success: false, message: error.message };
   }
 }

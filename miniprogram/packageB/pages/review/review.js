@@ -69,21 +69,27 @@ Page({
    * 加载订单信息
    */
   loadOrderInfo(orderId) {
-    // 模拟API请求
-    setTimeout(() => {
-      const mockOrder = {
-        id: parseInt(orderId),
-        workerId: 1,
-        workerName: '王阿姨',
-        workerAvatar: 'https://i.pravatar.cc/150?img=1',
-        serviceType: '保姆服务',
-        serviceDate: '2024-01-15'
-      };
-      
-      this.setData({
-        order: mockOrder
+    app.callCloudFunction('order', 'getDetail', { id: orderId })
+      .then((res) => {
+        const order = res.data || {};
+        this.setData({
+          order: {
+            id: order._id || orderId,
+            workerId: order.workerId,
+            workerName: order.workerName || '阿姨',
+            workerAvatar: order.workerAvatar || '/images/default-avatar.png',
+            serviceType: order.serviceType || '',
+            serviceDate: order.startDate || ''
+          }
+        });
+      })
+      .catch((err) => {
+        wx.showToast({
+          title: err.message || '加载失败',
+          icon: 'none'
+        });
+        setTimeout(() => wx.navigateBack(), 1000);
       });
-    }, 300);
   },
 
   /**

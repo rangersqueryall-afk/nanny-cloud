@@ -10,6 +10,7 @@
       "root": "packageA",
       "pages": [
         "pages/worker-detail/worker-detail",
+        "pages/my-worker-info/my-worker-info",
         "pages/booking/booking",
         "pages/worker-register/worker-register"
       ]
@@ -17,6 +18,7 @@
     {
       "root": "packageB",
       "pages": [
+        "pages/bookings/bookings",
         "pages/favorites/favorites",
         "pages/order-detail/order-detail",
         "pages/review/review"

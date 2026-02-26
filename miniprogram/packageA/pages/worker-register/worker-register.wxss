@@ -139,8 +139,6 @@
 
 .btn-submit {
   margin-top: 40rpx;
-  height: 90rpx;
-  line-height: 90rpx;
   background: linear-gradient(135deg, #FF6B6B, #E55A5A);
   color: #fff;
   font-size: 32rpx;

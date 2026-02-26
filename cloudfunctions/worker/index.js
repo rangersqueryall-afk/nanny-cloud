@@ -13,6 +13,38 @@ function maskName(name) {
   return name[0] + '**';
 }
 
+async function findWorkerById(workerId) {
+  if (!workerId) return null;
+
+  // 1) 优先按 _id 直查
+  try {
+    const docRes = await db.collection('workers').doc(workerId).get();
+    if (docRes && docRes.data) return docRes.data;
+  } catch (e) {
+    // 忽略 document 不存在，继续尝试兼容查询
+  }
+
+  // 2) 兼容部分环境：where(_id)
+  try {
+    const byUnderscoreId = await db.collection('workers')
+      .where({ _id: workerId })
+      .limit(1)
+      .get();
+    if (byUnderscoreId.data.length > 0) return byUnderscoreId.data[0];
+  } catch (e) {}
+
+  // 3) 兼容导入为业务字段 id
+  try {
+    const byId = await db.collection('workers')
+      .where({ id: workerId })
+      .limit(1)
+      .get();
+    if (byId.data.length > 0) return byId.data[0];
+  } catch (e) {}
+
+  return null;
+}
+
 exports.main = async (event, context) => {
   const { action, data } = event;
   const OPENID = cloud.getWXContext().OPENID;
@@ -32,6 +64,10 @@ exports.main = async (event, context) => {
       return await checkFavorite(OPENID, data);
     } else if (action === 'getFavorites') {
       return await getFavorites(OPENID, data);
+    } else if (action === 'getMyBookings') {
+      return await getMyBookings(OPENID, data);
+    } else if (action === 'cancelBooking') {
+      return await cancelBooking(OPENID, data);
     } else if (action === 'bookWorker') {
       return await bookWorker(OPENID, data);
     } else {
@@ -43,213 +79,67 @@ exports.main = async (event, context) => {
 };
 
 async function getList(data) {
+  const _ = db.command;
   const page = data && data.page ? data.page : 1;
   const limit = data && data.limit ? data.limit : 10;
+  const keyword = data && data.keyword ? String(data.keyword).trim() : '';
 
-  try {
-    const where = { isPublic: true, isVerified: true };
-    
-    // 服务类型筛选
-    if (data && data.type && data.type !== 'all' && data.type !== '') {
-      where.serviceTypes = data.type;
-    }
-    
-    // 价格范围筛选
-    if (data && data.minPrice !== undefined && data.maxPrice !== undefined) {
-      where['price.monthly'] = db.command.gte(data.minPrice).and(db.command.lte(data.maxPrice));
-    }
-    
-    // 经验筛选
-    if (data && data.minExperience !== undefined) {
-      where.experience = db.command.gte(data.minExperience);
-    }
+  // 搜索页应支持所有公开阿姨
+  const where = { isPublic: true };
+  
+  // 服务类型筛选
+  if (data && data.type && data.type !== 'all' && data.type !== '') {
+    // serviceTypes 为数组，使用 all([type]) 实现包含筛选
+    where.serviceTypes = _.all([data.type]);
+  }
+  
+  // 价格范围筛选
+  if (data && data.minPrice !== undefined && data.maxPrice !== undefined) {
+    where['price.monthly'] = _.gte(data.minPrice).and(_.lte(data.maxPrice));
+  }
+  
+  // 经验筛选
+  if (data && data.minExperience !== undefined) {
+    where.experience = _.gte(data.minExperience);
+  }
 
+  let sourceList = [];
+  let total = 0;
+
+  if (keyword) {
+    // 关键词搜索用内存过滤，避免受分页影响漏数据
+    const fullRes = await db.collection('workers')
+      .where(where)
+      .orderBy('rating', 'desc')
+      .limit(200)
+      .get();
+
+    const lowerKeyword = keyword.toLowerCase();
+    const matched = fullRes.data.filter((worker) => {
+      const nameMatch = worker.name && String(worker.name).toLowerCase().includes(lowerKeyword);
+      const hometownMatch = worker.hometown && String(worker.hometown).toLowerCase().includes(lowerKeyword);
+      const skillMatch = Array.isArray(worker.skills) && worker.skills.some(s => String(s).toLowerCase().includes(lowerKeyword));
+      return nameMatch || hometownMatch || skillMatch;
+    });
+
+    total = matched.length;
+    sourceList = matched.slice((page - 1) * limit, page * limit);
+  } else {
     const workerRes = await db.collection('workers')
       .where(where)
       .orderBy('rating', 'desc')
       .skip((page - 1) * limit)
       .limit(limit)
       .get();
-
-    // 如果数据库没有数据，返回 mock 数据（带筛选）
-    if (workerRes.data.length === 0) {
-      return { success: true, data: getMockWorkerList(page, limit, data), message: '获取成功' };
-    }
-
-    const maskedList = [];
-    for (let i = 0; i < workerRes.data.length; i++) {
-      const worker = workerRes.data[i];
-      maskedList.push({
-        _id: worker._id,
-        name: maskName(worker.name),
-        avatar: worker.avatar,
-        age: worker.age,
-        hometown: worker.hometown,
-        experience: worker.experience,
-        serviceTypes: worker.serviceTypes,
-        price: worker.price,
-        skills: worker.skills,
-        rating: worker.rating,
-        reviewCount: worker.reviewCount
-      });
-    }
-
+    sourceList = workerRes.data;
     const countRes = await db.collection('workers').where(where).count();
-
-    return {
-      success: true,
-      data: {
-        list: maskedList,
-        pagination: {
-          page: page,
-          limit: limit,
-          total: countRes.total,
-          totalPages: Math.ceil(countRes.total / limit)
-        }
-      },
-      message: '获取成功'
-    };
-  } catch (error) {
-    // 数据库查询失败，返回 mock 数据
-    console.log('数据库查询失败，返回 mock 数据:', error);
-    return { success: true, data: getMockWorkerList(page, limit, data), message: '获取成功' };
-  }
-}
-
-// Mock 阿姨列表数据
-function getMockWorkerList(page, limit, data) {
-  const allWorkers = [
-    {
-      _id: 'w001',
-      name: '王**',
-      avatar: '/images/worker-1.jpg',
-      age: 45,
-      hometown: '安徽合肥',
-      experience: 8,
-      serviceTypes: ['babysitter', 'nanny'],
-      price: { daily: 280, monthly: 7500 },
-      skills: ['婴儿护理', '辅食制作', '早教启蒙', '家务清洁'],
-      rating: 4.9,
-      reviewCount: 128
-    },
-    {
-      _id: 'w002',
-      name: '李**',
-      avatar: '/images/worker-2.jpg',
-      age: 52,
-      hometown: '江苏南京',
-      experience: 12,
-      serviceTypes: ['maternity', 'babysitter'],
-      price: { daily: 350, monthly: 9800 },
-      skills: ['产妇护理', '新生儿护理', '月子餐', '催乳'],
-      rating: 5.0,
-      reviewCount: 89
-    },
-    {
-      _id: 'w003',
-      name: '张**',
-      avatar: '/images/worker-3.jpg',
-      age: 38,
-      hometown: '浙江杭州',
-      experience: 5,
-      serviceTypes: ['nanny'],
-      price: { daily: 220, monthly: 6000 },
-      skills: ['家务清洁', '烹饪', '接送孩子', '陪伴老人'],
-      rating: 4.7,
-      reviewCount: 56
-    },
-    {
-      _id: 'w004',
-      name: '陈**',
-      avatar: '/images/worker-4.jpg',
-      age: 48,
-      hometown: '四川成都',
-      experience: 10,
-      serviceTypes: ['babysitter', 'nanny'],
-      price: { daily: 300, monthly: 8000 },
-      skills: ['婴儿护理', '早教', '辅食制作', '家务清洁', '烹饪'],
-      rating: 4.8,
-      reviewCount: 95
-    },
-    {
-      _id: 'w005',
-      name: '刘**',
-      avatar: '/images/worker-5.jpg',
-      age: 42,
-      hometown: '湖南长沙',
-      experience: 6,
-      serviceTypes: ['maternity'],
-      price: { daily: 380, monthly: 10800 },
-      skills: ['产妇护理', '新生儿护理', '月子餐', '产后恢复'],
-      rating: 4.9,
-      reviewCount: 67
-    },
-    {
-      _id: 'w006',
-      name: '赵**',
-      avatar: '/images/default-avatar.png',
-      age: 55,
-      hometown: '山东青岛',
-      experience: 15,
-      serviceTypes: ['nanny'],
-      price: { daily: 250, monthly: 6800 },
-      skills: ['家务清洁', '烹饪', '照顾老人', '收纳整理'],
-      rating: 4.6,
-      reviewCount: 112
-    }
-  ];
-
-  let filteredWorkers = allWorkers;
-  
-  // 服务类型筛选
-  const type = data && data.type;
-  if (type && type !== 'all' && type !== '') {
-    filteredWorkers = filteredWorkers.filter(w => w.serviceTypes.includes(type));
-  }
-  
-  // 价格范围筛选
-  if (data && data.minPrice !== undefined && data.maxPrice !== undefined) {
-    filteredWorkers = filteredWorkers.filter(w => {
-      const monthlyPrice = w.price && w.price.monthly ? w.price.monthly : 0;
-      return monthlyPrice >= data.minPrice && monthlyPrice <= data.maxPrice;
-    });
-  }
-  
-  // 经验筛选
-  if (data && data.minExperience !== undefined) {
-    filteredWorkers = filteredWorkers.filter(w => w.experience >= data.minExperience);
+    total = countRes.total;
   }
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const list = filteredWorkers.slice(startIndex, endIndex);
-
-  return {
-    list: list,
-    pagination: {
-      page: page,
-      limit: limit,
-      total: filteredWorkers.length,
-      totalPages: Math.ceil(filteredWorkers.length / limit)
-    }
-  };
-}
-
-async function getDetail(data) {
-  const id = data.id;
-  try {
-    const workerRes = await db.collection('workers').doc(id).get();
-    const worker = workerRes.data;
-
-    if (!worker) {
-      throw new Error('not_found');
-    }
-
-    if (!worker.isPublic) {
-      return { success: false, message: '该阿姨信息已隐藏' };
-    }
-
-    const maskedWorker = {
+  const maskedList = [];
+  for (let i = 0; i < sourceList.length; i++) {
+    const worker = sourceList[i];
+    maskedList.push({
       _id: worker._id,
       name: maskName(worker.name),
       avatar: worker.avatar,
@@ -259,45 +149,41 @@ async function getDetail(data) {
       serviceTypes: worker.serviceTypes,
       price: worker.price,
       skills: worker.skills,
-      bio: worker.bio,
       rating: worker.rating,
       reviewCount: worker.reviewCount
-    };
-
-    const reviewRes = await db.collection('reviews')
-      .where({ workerId: id })
-      .orderBy('createdAt', 'desc')
-      .limit(5)
-      .get();
-
-    maskedWorker.reviews = reviewRes.data;
-    return {
-      success: true,
-      data: maskedWorker,
-      message: '获取成功'
-    };
-  } catch (error) {
-    console.log('getDetail 查询数据库失败，尝试返回 mock 数据:', error);
-    const mockWorker = getMockWorkerDetailById(id);
-    if (!mockWorker) {
-      return { success: false, message: '阿姨不存在' };
-    }
-    return {
-      success: true,
-      data: mockWorker,
-      message: '获取成功(mock)'
-    };
+    });
   }
-}
-
-function getMockWorkerDetailById(id) {
-  const list = getMockWorkerList(1, 100, {});
-  const worker = list.list.find(item => String(item._id) === String(id));
-  if (!worker) return null;
 
   return {
+    success: true,
+    data: {
+      list: maskedList,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: total,
+        totalPages: Math.ceil(total / limit)
+      }
+    },
+    message: '获取成功'
+  };
+}
+
+async function getDetail(data) {
+  const id = data.id;
+  const worker = await findWorkerById(id);
+
+  if (!worker) {
+    return { success: false, message: '阿姨不存在，请检查 workers 集合数据是否已导入当前云环境' };
+  }
+
+  if (!worker.isPublic) {
+    return { success: false, message: '该阿姨信息已隐藏' };
+  }
+
+  const maskedWorker = {
     _id: worker._id,
-    name: worker.name,
+    name: maskName(worker.name),
     avatar: worker.avatar,
     age: worker.age,
     hometown: worker.hometown,
@@ -305,11 +191,22 @@ function getMockWorkerDetailById(id) {
     serviceTypes: worker.serviceTypes,
     price: worker.price,
     skills: worker.skills,
-    bio: '从业经验丰富，服务认真负责，注重沟通和细节。',
+    bio: worker.bio,
     rating: worker.rating,
-    reviewCount: worker.reviewCount,
-    orderCount: 60 + (parseInt(String(id).replace(/\D/g, ''), 10) || 1) * 3,
-    isVerified: true
+    reviewCount: worker.reviewCount
+  };
+
+  const reviewRes = await db.collection('reviews')
+    .where({ workerId: id })
+    .orderBy('createdAt', 'desc')
+    .limit(5)
+    .get();
+
+  maskedWorker.reviews = reviewRes.data;
+  return {
+    success: true,
+    data: maskedWorker,
+    message: '获取成功'
   };
 }
 
@@ -356,14 +253,10 @@ async function addFavorite(openid, data) {
   let workerName = data && data.workerName ? data.workerName : '阿姨';
   let workerAvatar = data && data.workerAvatar ? data.workerAvatar : '/images/default-avatar.png';
 
-  try {
-    const workerRes = await db.collection('workers').doc(workerId).get();
-    if (workerRes && workerRes.data) {
-      workerName = maskName(workerRes.data.name || workerName);
-      workerAvatar = workerRes.data.avatar || workerAvatar;
-    }
-  } catch (error) {
-    console.log('收藏时未查询到阿姨主表，使用前端透传数据兜底:', error);
+  const worker = await findWorkerById(workerId);
+  if (worker) {
+    workerName = maskName(worker.name || workerName);
+    workerAvatar = worker.avatar || workerAvatar;
   }
 
   await db.collection('favorites').add({
@@ -430,6 +323,36 @@ async function getFavorites(openid, data) {
   };
 }
 
+async function getMyBookings(openid, data) {
+  const page = data && data.page ? data.page : 1;
+  const limit = data && data.limit ? data.limit : 10;
+
+  const bookingRes = await db.collection('bookings')
+    .where({ userOpenid: openid })
+    .orderBy('createdAt', 'desc')
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .get();
+
+  const countRes = await db.collection('bookings')
+    .where({ userOpenid: openid })
+    .count();
+
+  return {
+    success: true,
+    data: {
+      list: bookingRes.data,
+      pagination: {
+        page,
+        limit,
+        total: countRes.total,
+        totalPages: Math.ceil(countRes.total / limit)
+      }
+    },
+    message: '获取成功'
+  };
+}
+
 async function bookWorker(openid, data) {
   const userRes = await db.collection('users').where({ openid: openid }).get();
   if (userRes.data.length === 0) {
@@ -437,19 +360,37 @@ async function bookWorker(openid, data) {
   }
   const user = userRes.data[0];
 
-  const workerRes = await db.collection('workers').doc(data.workerId).get();
-  if (!workerRes.data) {
-    return { success: false, message: '阿姨不存在' };
+  const worker = await findWorkerById(data.workerId);
+  if (!worker) {
+    return { success: false, message: '阿姨不存在，请检查 workers 集合数据是否已导入当前云环境' };
   }
-  const worker = workerRes.data;
+
+  // 进行中的预约占用校验：未取消的预约不可重复预约同一位阿姨
+  const activeBookingRes = await db.collection('bookings')
+    .where({
+      workerId: data.workerId,
+      status: db.command.in(['pending', 'confirmed'])
+    })
+    .limit(1)
+    .get();
+  if (activeBookingRes.data.length > 0) {
+    return { success: false, message: '该阿姨已被预约，请选择其他阿姨或稍后再试' };
+  }
 
   const bookingData = {
-    userOpenid: openid,
-    userNickname: user.nickname,
-    userPhone: user.phone,
-    workerId: data.workerId,
+      userOpenid: openid,
+      userNickname: user.nickname,
+      userPhone: user.phone,
+    workerId: worker._id || data.workerId,
     workerName: worker.name,
+    workerAvatar: worker.avatar || '/images/default-avatar.png',
     workerPhone: worker.phone,
+    serviceType: data.serviceType || '',
+    startDate: data.startDate || '',
+    duration: data.duration || '',
+    dailyHours: data.dailyHours || '',
+    address: data.address || '',
+    totalPrice: data.totalPrice || 0,
     contactName: data.contactName,
     contactPhone: data.contactPhone,
     remark: data.remark ? data.remark : '',
@@ -468,4 +409,34 @@ async function bookWorker(openid, data) {
     },
     message: '预约成功'
   };
+}
+
+async function cancelBooking(openid, data) {
+  const bookingId = data && data.bookingId;
+  if (!bookingId) {
+    return { success: false, message: '预约ID不能为空' };
+  }
+
+  const bookingRes = await db.collection('bookings')
+    .where({ _id: bookingId, userOpenid: openid })
+    .limit(1)
+    .get();
+
+  if (bookingRes.data.length === 0) {
+    return { success: false, message: '预约不存在' };
+  }
+
+  const booking = bookingRes.data[0];
+  if (booking.status === 'cancelled') {
+    return { success: false, message: '该预约已取消' };
+  }
+
+  await db.collection('bookings').doc(bookingId).update({
+    data: {
+      status: 'cancelled',
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return { success: true, message: '预约已取消' };
 }

@@ -1,8 +1,21 @@
 const app = getApp();
 
+const SERVICE_TYPE_TEXT = {
+  livein: '住家服务',
+  daytime: '白班服务',
+  temporary: '临时服务'
+};
+
+const STATUS_TEXT = {
+  pending: '待处理',
+  confirmed: '已确认',
+  cancelled: '已取消',
+  completed: '已完成'
+};
+
 Page({
   data: {
-    favorites: [],
+    bookings: [],
     page: 1,
     pageSize: 10,
     hasMore: true,
@@ -11,17 +24,13 @@ Page({
   },
 
   onLoad() {
-    this.loadFavorites(true);
-  },
-
-  onPullDownRefresh() {
-    this.onRefresh();
+    this.loadBookings(true);
   },
 
   onRefresh() {
     if (this.data.isRefreshing) return;
     this.setData({ isRefreshing: true });
-    this.loadFavorites(true, () => {
+    this.loadBookings(true, () => {
       this.setData({ isRefreshing: false });
       wx.stopPullDownRefresh();
     });
@@ -29,25 +38,27 @@ Page({
 
   onLoadMore() {
     if (this.data.isLoading || !this.data.hasMore) return;
-    this.loadFavorites(false);
+    this.loadBookings(false);
   },
 
-  loadFavorites(reset = false, callback) {
+  loadBookings(reset = false, callback) {
     if (this.data.isLoading) return;
     this.setData({ isLoading: true });
 
     const page = reset ? 1 : this.data.page;
     const { pageSize } = this.data;
 
-    app.callCloudFunction('worker', 'getFavorites', { page, limit: pageSize })
+    app.callCloudFunction('worker', 'getMyBookings', { page, limit: pageSize })
       .then((res) => {
         const list = (res.data && res.data.list ? res.data.list : []).map((item) => ({
           ...item,
-          createdAtText: this.formatDate(item.createdAt)
+          createdAtText: this.formatDate(item.createdAt),
+          statusText: STATUS_TEXT[item.status] || '未知状态',
+          serviceTypeText: SERVICE_TYPE_TEXT[item.serviceType] || item.serviceType || '-'
         }));
 
         this.setData({
-          favorites: reset ? list : [...this.data.favorites, ...list],
+          bookings: reset ? list : [...this.data.bookings, ...list],
           page: page + 1,
           hasMore: list.length >= pageSize,
           isLoading: false
@@ -55,53 +66,48 @@ Page({
         if (callback) callback();
       })
       .catch((err) => {
-        console.error('加载收藏列表失败:', err);
-        this.setData({
-          favorites: reset ? [] : this.data.favorites,
-          hasMore: false,
-          isLoading: false
-        });
+        console.error('加载预约列表失败:', err);
+        this.setData({ isLoading: false });
         app.showToast(err.message || '加载失败');
         if (callback) callback();
       });
   },
 
-  onCardTap(e) {
-    const workerId = e.currentTarget.dataset.workerId;
-    if (!workerId) return;
-    wx.navigateTo({
-      url: `/packageA/pages/worker-detail/worker-detail?id=${workerId}`
-    });
-  },
-
-  onRemove(e) {
-    const workerId = e.currentTarget.dataset.workerId;
-    if (!workerId) return;
-
-    wx.showModal({
-      title: '取消收藏',
-      content: '确定取消收藏该阿姨吗？',
-      success: (res) => {
-        if (!res.confirm) return;
-        app.callCloudFunction('worker', 'removeFavorite', { workerId })
-          .then(() => {
-            app.showToast('已取消收藏', 'success');
-            const favorites = this.data.favorites.filter(item => String(item.workerId) !== String(workerId));
-            this.setData({ favorites });
-            if (favorites.length === 0) {
-              this.setData({ hasMore: false });
-            }
-          })
-          .catch((err) => {
-            app.showToast(err.message || '操作失败');
-          });
-      }
-    });
-  },
-
   onGoWorkers() {
     wx.navigateTo({
       url: '/pages/workers/workers'
+    });
+  },
+
+  onCancelBooking(e) {
+    const bookingId = e.currentTarget.dataset.bookingId;
+    if (!bookingId) return;
+
+    wx.showModal({
+      title: '取消预约',
+      content: '确定取消该预约吗？',
+      success: (res) => {
+        if (!res.confirm) return;
+
+        app.callCloudFunction('worker', 'cancelBooking', { bookingId })
+          .then(() => {
+            const bookings = this.data.bookings.map((item) => {
+              if (item._id === bookingId) {
+                return {
+                  ...item,
+                  status: 'cancelled',
+                  statusText: STATUS_TEXT.cancelled
+                };
+              }
+              return item;
+            });
+            this.setData({ bookings });
+            app.showToast('预约已取消', 'success');
+          })
+          .catch((err) => {
+            app.showToast(err.message || '取消失败');
+          });
+      }
     });
   },
 
@@ -115,8 +121,7 @@ Page({
     } else if (value && typeof value === 'object' && typeof value.seconds === 'number') {
       date = new Date(value.seconds * 1000);
     }
-    if (!date) return '';
-    if (Number.isNaN(date.getTime())) return '';
+    if (!date || Number.isNaN(date.getTime())) return '';
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');

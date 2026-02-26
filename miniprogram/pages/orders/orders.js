@@ -147,15 +147,11 @@ Page({
     })
     .catch((err) => {
       console.error('获取订单统计失败:', err);
-      // 云函数失败时使用模拟数据
-      const counts = this.calculateOrderCounts();
-      
       const { tabs } = this.data;
-      tabs[0].count = counts.all;
-      tabs[1].count = counts.pending;
-      tabs[2].count = counts.serving;
-      tabs[3].count = counts.completed;
-      
+      tabs[0].count = 0;
+      tabs[1].count = 0;
+      tabs[2].count = 0;
+      tabs[3].count = 0;
       this.setData({ tabs });
     });
   },
@@ -194,98 +190,14 @@ Page({
     })
     .catch((err) => {
       console.error('获取订单失败:', err);
-      // 云函数失败时使用模拟数据
-      const mockOrders = this.generateMockOrders(page, pageSize, status);
-      
       this.setData({
-        orders: reset ? mockOrders : [...this.data.orders, ...mockOrders],
-        page: page + 1,
-        hasMore: mockOrders.length >= pageSize,
+        orders: reset ? [] : this.data.orders,
+        hasMore: false,
         isLoading: false
       });
-      
+      app.showToast(err.message || '加载失败');
       if (callback) callback();
     });
-  },
-
-  /**
-   * 生成模拟订单数据
-   */
-  generateMockOrders(page, pageSize, filterStatus) {
-    // 预定义订单数据（带时间戳，用于排序）
-    const baseOrders = [
-      { id: 1, status: 'pending', statusText: '待服务', createTime: '2024-02-20 10:30:00' },
-      { id: 2, status: 'confirmed', statusText: '已确认', createTime: '2024-02-19 14:20:00' },
-      { id: 3, status: 'serving', statusText: '服务中', createTime: '2024-02-18 09:00:00' },
-      { id: 4, status: 'completed', statusText: '已完成', createTime: '2024-02-17 16:45:00' },
-      { id: 5, status: 'completed', statusText: '已完成', createTime: '2024-02-16 11:30:00' },
-      { id: 6, status: 'pending', statusText: '待服务', createTime: '2024-02-15 13:20:00' },
-      { id: 7, status: 'serving', statusText: '服务中', createTime: '2024-02-14 10:00:00' },
-      { id: 8, status: 'completed', statusText: '已完成', createTime: '2024-02-13 15:30:00' },
-      { id: 9, status: 'cancelled', statusText: '已取消', createTime: '2024-02-12 09:45:00' },
-      { id: 10, status: 'confirmed', statusText: '已确认', createTime: '2024-02-11 14:00:00' },
-      { id: 11, status: 'completed', statusText: '已完成', createTime: '2024-02-10 16:20:00' },
-      { id: 12, status: 'pending', statusText: '待服务', createTime: '2024-02-09 11:10:00' }
-    ];
-    
-    const serviceTypes = ['保姆服务', '育儿嫂服务', '月嫂服务', '护老服务'];
-    const names = ['王阿姨', '李阿姨', '张阿姨', '刘阿姨', '陈阿姨'];
-    
-    // 根据筛选状态过滤订单
-    let filteredOrders = baseOrders;
-    if (filterStatus !== 'all') {
-      if (filterStatus === 'pending') {
-        // 待服务包括 pending 和 confirmed
-        filteredOrders = baseOrders.filter(o => o.status === 'pending' || o.status === 'confirmed');
-      } else {
-        filteredOrders = baseOrders.filter(o => o.status === filterStatus);
-      }
-    }
-    
-    // 按时间倒序排序（最新的在前面）
-    filteredOrders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
-    
-    // 分页
-    const startIndex = (page - 1) * pageSize;
-    const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
-    
-    // 生成完整订单数据
-    const orders = paginatedOrders.map(order => ({
-      ...order,
-      orderNo: `DD2024${String(order.id).padStart(4, '0')}`,
-      workerId: order.id,
-      workerName: names[order.id % names.length],
-      workerAvatar: `/images/worker-${(order.id % 5) + 1}.jpg`,
-      serviceType: serviceTypes[order.id % serviceTypes.length],
-      serviceDate: order.createTime.split(' ')[0],
-      serviceTime: order.createTime.split(' ')[1],
-      address: '北京市朝阳区某某小区1号楼101室',
-      totalPrice: 6500 + (order.id % 35) * 100,
-      isReviewed: order.status === 'completed' && order.id % 2 === 0
-    }));
-    
-    return orders;
-  },
-
-  /**
-   * 计算各状态订单数量
-   */
-  calculateOrderCounts() {
-    const baseOrders = [
-      { status: 'pending' }, { status: 'confirmed' }, { status: 'serving' },
-      { status: 'completed' }, { status: 'completed' }, { status: 'pending' },
-      { status: 'serving' }, { status: 'completed' }, { status: 'cancelled' },
-      { status: 'confirmed' }, { status: 'completed' }, { status: 'pending' }
-    ];
-    
-    const counts = {
-      all: baseOrders.length,
-      pending: baseOrders.filter(o => o.status === 'pending' || o.status === 'confirmed').length,
-      serving: baseOrders.filter(o => o.status === 'serving').length,
-      completed: baseOrders.filter(o => o.status === 'completed').length
-    };
-    
-    return counts;
   },
 
   /**
@@ -350,18 +262,7 @@ Page({
    * 联系客服
    */
   handleContact() {
-    wx.showModal({
-      title: '联系客服',
-      content: '客服电话：400-888-8888',
-      confirmText: '拨打',
-      success: (res) => {
-        if (res.confirm) {
-          wx.makePhoneCall({
-            phoneNumber: '4008888888'
-          });
-        }
-      }
-    });
+    app.contactService();
   },
 
   /**

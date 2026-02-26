@@ -54,39 +54,60 @@ Page({
    * 加载订单详情
    */
   loadOrderDetail(id) {
-    // 模拟API请求
-    setTimeout(() => {
-      const mockOrder = {
-        id: parseInt(id),
-        orderNo: `DD2024011500${id}`,
-        status: 'pending',
-        statusText: '待服务',
-        workerId: 1,
-        workerName: '王阿姨',
-        workerAvatar: 'https://i.pravatar.cc/150?img=1',
-        serviceType: '保姆服务',
-        serviceDate: '2024-02-01',
-        serviceTime: '09:00',
-        address: '北京市朝阳区某某小区1号楼101室',
-        contactName: '张先生',
-        contactPhone: '138****8888',
-        remark: '家里有老人需要照顾，请多关照',
-        createTime: '2024-01-15 14:30:00',
-        duration: '3个月',
-        servicePrice: 6500,
-        discount: 200,
-        totalPrice: 19300,
-        isReviewed: false
-      };
-      
-      this.setData({
-        order: mockOrder
-      }, () => {
-        this.updateStatusInfo();
-        this.updateProcessList();
-        this.updateActionButtons();
+    app.callCloudFunction('order', 'getDetail', { id })
+      .then((res) => {
+        const order = res.data || {};
+        const normalized = {
+          id: order._id || id,
+          orderNo: order._id || id,
+          status: order.status || 'pending',
+          statusText: '',
+          workerId: order.workerId,
+          workerName: order.workerName || '阿姨',
+          workerAvatar: order.workerAvatar || '/images/default-avatar.png',
+          serviceType: order.serviceType || '',
+          serviceDate: order.startDate || '',
+          serviceTime: '',
+          address: order.address || '',
+          contactName: order.contactName || '',
+          contactPhone: order.contactPhone || '',
+          remark: order.remark || '',
+          createTime: this.formatDateTime(order.createdAt),
+          duration: '',
+          servicePrice: order.price || 0,
+          discount: 0,
+          totalPrice: order.price || 0,
+          isReviewed: false
+        };
+        this.setData({
+          order: normalized
+        }, () => {
+          this.updateStatusInfo();
+          this.updateProcessList();
+          this.updateActionButtons();
+        });
+      })
+      .catch((err) => {
+        wx.showToast({
+          title: err.message || '加载失败',
+          icon: 'none'
+        });
+        setTimeout(() => wx.navigateBack(), 1000);
       });
-    }, 500);
+  },
+
+  formatDateTime(value) {
+    if (!value) return '';
+    let date = null;
+    if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      date = new Date(value);
+    } else if (value && typeof value === 'object' && typeof value.seconds === 'number') {
+      date = new Date(value.seconds * 1000);
+    }
+    if (!date || Number.isNaN(date.getTime())) return '';
+    return formatDate(date, 'YYYY-MM-DD HH:mm:ss');
   },
 
   /**
@@ -264,18 +285,7 @@ Page({
    * 联系客服
    */
   handleContact() {
-    wx.showModal({
-      title: '联系客服',
-      content: '客服电话：400-888-8888',
-      confirmText: '拨打',
-      success: (res) => {
-        if (res.confirm) {
-          wx.makePhoneCall({
-            phoneNumber: '4008888888'
-          });
-        }
-      }
-    });
+    app.contactService();
   },
 
   /**

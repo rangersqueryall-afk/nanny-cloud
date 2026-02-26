@@ -75,26 +75,15 @@ Page({
         });
       })
       .catch((err) => {
-        console.error('加载阿姨详情失败，使用本地数据:', err);
-        const localWorker = this.getLocalWorkerDetail(id);
-        if (!localWorker) {
-          wx.showToast({
-            title: '阿姨信息不存在',
-            icon: 'none'
-          });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1200);
-          return;
-        }
-
-        this.setData({
-          worker: localWorker,
-          isLoading: false
+        console.error('加载阿姨详情失败:', err);
+        this.setData({ isLoading: false });
+        wx.showToast({
+          title: err.message || '加载失败',
+          icon: 'none'
         });
-        wx.setNavigationBarTitle({
-          title: localWorker.name
-        });
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1200);
       });
   },
 
@@ -122,177 +111,53 @@ Page({
     };
   },
 
-  getLocalWorkerDetail(id) {
-    const localWorkers = [
-      {
-        _id: 'w001',
-        name: '王秀芳',
-        age: 45,
-        hometown: '安徽合肥',
-        experience: 8,
-        price: { daily: 280, monthly: 7500 },
-        hourlyPrice: 50,
-        rating: 4.9,
-        orderCount: 128,
-        reviewCount: 128,
-        skills: ['婴儿护理', '辅食制作', '早教启蒙', '家务清洁'],
-        serviceTypes: ['babysitter', 'nanny'],
-        avatar: '/images/worker-1.jpg',
-        isVerified: true,
-        introduction: '从事家政服务行业8年，擅长婴幼儿护理、辅食制作和家庭整理。',
-        experiences: [
-          { title: '住家保姆', period: '2020.03 - 至今', description: '负责三口之家家务及3岁宝宝照护。' },
-          { title: '育儿嫂', period: '2018.06 - 2020.02', description: '负责新生儿喂养、洗护与作息培养。' }
-        ]
-      },
-      {
-        _id: 'w002',
-        name: '李桂英',
-        age: 52,
-        hometown: '江苏南京',
-        experience: 12,
-        price: { daily: 350, monthly: 9800 },
-        hourlyPrice: 65,
-        rating: 5.0,
-        orderCount: 96,
-        reviewCount: 89,
-        skills: ['产妇护理', '新生儿护理', '月子餐', '催乳'],
-        serviceTypes: ['maternity', 'babysitter'],
-        avatar: '/images/worker-2.jpg',
-        isVerified: true,
-        introduction: '12年月嫂经验，注重科学护理与饮食调理，服务口碑稳定。',
-        experiences: [
-          { title: '高级月嫂', period: '2019.01 - 至今', description: '主要负责月子期产妇和新生儿护理。' },
-          { title: '母婴护理师', period: '2013.05 - 2018.12', description: '在母婴机构提供住家及到家服务。' }
-        ]
-      },
-      {
-        _id: 'w003',
-        name: '张美华',
-        age: 38,
-        hometown: '浙江杭州',
-        experience: 5,
-        price: { daily: 220, monthly: 6000 },
-        hourlyPrice: 45,
-        rating: 4.7,
-        orderCount: 62,
-        reviewCount: 56,
-        skills: ['家务清洁', '烹饪', '接送孩子', '陪伴老人'],
-        serviceTypes: ['nanny'],
-        avatar: '/images/worker-3.jpg',
-        isVerified: true,
-        introduction: '擅长家庭清洁收纳和三餐安排，做事细致，沟通顺畅。',
-        experiences: [
-          { title: '白班保姆', period: '2021.02 - 至今', description: '负责家庭家务、采购与孩子接送。' }
-        ]
-      },
-      {
-        _id: 'w004',
-        name: '陈雅琴',
-        age: 48,
-        hometown: '四川成都',
-        experience: 10,
-        price: { daily: 300, monthly: 8000 },
-        hourlyPrice: 55,
-        rating: 4.8,
-        orderCount: 110,
-        reviewCount: 95,
-        skills: ['婴儿护理', '早教', '辅食制作', '家务清洁', '烹饪'],
-        serviceTypes: ['babysitter', 'nanny'],
-        avatar: '/images/worker-4.jpg',
-        isVerified: true,
-        introduction: '10年育儿与家务服务经验，擅长幼儿早教互动与膳食搭配。',
-        experiences: [
-          { title: '育儿嫂', period: '2018.07 - 至今', description: '负责0-3岁幼儿照护与早教陪伴。' }
-        ]
-      },
-      {
-        _id: 'w005',
-        name: '刘小红',
-        age: 42,
-        hometown: '湖南长沙',
-        experience: 6,
-        price: { daily: 380, monthly: 10800 },
-        hourlyPrice: 70,
-        rating: 4.9,
-        orderCount: 72,
-        reviewCount: 67,
-        skills: ['产妇护理', '新生儿护理', '月子餐', '产后恢复'],
-        serviceTypes: ['maternity'],
-        avatar: '/images/worker-5.jpg',
-        isVerified: true,
-        introduction: '专注母婴护理与产后恢复，服务流程规范，执行力强。',
-        experiences: [
-          { title: '住家月嫂', period: '2020.09 - 至今', description: '提供新生儿护理、母乳指导和恢复支持。' }
-        ]
-      },
-      {
-        _id: 'w006',
-        name: '赵淑芬',
-        age: 55,
-        hometown: '山东青岛',
-        experience: 15,
-        price: { daily: 250, monthly: 6800 },
-        hourlyPrice: 48,
-        rating: 4.6,
-        orderCount: 130,
-        reviewCount: 112,
-        skills: ['家务清洁', '烹饪', '照顾老人', '收纳整理'],
-        serviceTypes: ['nanny'],
-        avatar: '/images/default-avatar.png',
-        isVerified: true,
-        introduction: '长期从事家政与老人照护工作，节奏稳定，责任心强。',
-        experiences: [
-          { title: '护老保姆', period: '2016.04 - 至今', description: '负责老人日常照护与家庭饮食安排。' }
-        ]
-      }
-    ];
-
-    const worker = localWorkers.find(item => item._id === id || String(item.id) === String(id));
-    if (!worker) return null;
-    return this.normalizeWorkerData(worker, id);
-  },
-
   /**
    * 加载用户评价
    */
   loadReviews(id) {
-    // 模拟API请求
-    setTimeout(() => {
-      const mockReviews = [
-        {
-          id: 1,
-          userName: '张女士',
-          userAvatar: 'https://i.pravatar.cc/150?img=10',
-          rating: 5,
-          date: '2024-01-15',
-          content: '王阿姨非常专业，做事认真负责，做的饭菜很好吃，宝宝也很喜欢她。强烈推荐！',
-          tags: ['专业', '认真负责', '做饭好吃']
-        },
-        {
-          id: 2,
-          userName: '李先生',
-          userAvatar: 'https://i.pravatar.cc/150?img=11',
-          rating: 5,
-          date: '2024-01-10',
-          content: '王阿姨在我们家工作了一年多，非常负责任，家务做得井井有条，对老人也很有耐心。',
-          tags: ['负责任', '有耐心']
-        },
-        {
-          id: 3,
-          userName: '王女士',
-          userAvatar: 'https://i.pravatar.cc/150?img=12',
-          rating: 4,
-          date: '2024-01-05',
-          content: '总体来说不错，就是有时候沟通需要再多一点。',
-          tags: ['总体不错']
-        }
-      ];
-      
-      this.setData({
-        reviews: mockReviews
+    app.callCloudFunction('worker', 'getReviews', {
+      id,
+      page: 1,
+      limit: 20
+    })
+      .then((res) => {
+        const list = (res.data && res.data.list ? res.data.list : []).map((item, index) => ({
+          id: item._id || item.id || index + 1,
+          userName: item.userNickname || item.userName || '匿名用户',
+          userAvatar: item.userAvatar || '/images/default-avatar.png',
+          rating: item.rating || 5,
+          date: this.formatReviewDate(item.createdAt),
+          content: item.content || '',
+          tags: item.tags || []
+        }));
+
+        this.setData({
+          reviews: list
+        });
+      })
+      .catch((err) => {
+        console.error('加载评价失败:', err);
+        this.setData({
+          reviews: []
+        });
       });
-    }, 800);
+  },
+
+  formatReviewDate(value) {
+    if (!value) return '';
+    let date = null;
+    if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      date = new Date(value);
+    } else if (value && typeof value === 'object' && typeof value.seconds === 'number') {
+      date = new Date(value.seconds * 1000);
+    }
+    if (!date || Number.isNaN(date.getTime())) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   },
 
   /**
@@ -305,10 +170,8 @@ Page({
         this.setData({ isCollected });
       })
       .catch((err) => {
-        console.error('检查收藏状态失败，使用本地兜底:', err);
-        const collectList = wx.getStorageSync('collectList') || [];
-        const isCollected = collectList.some(item => String(item.id) === String(id));
-        this.setData({ isCollected });
+        console.error('检查收藏状态失败:', err);
+        this.setData({ isCollected: false });
       });
   },
 
@@ -339,24 +202,10 @@ Page({
         });
       })
       .catch((err) => {
-        console.error('收藏操作失败，使用本地兜底:', err);
-        let collectList = wx.getStorageSync('collectList') || [];
-        if (isCollected) {
-          collectList = collectList.filter(item => String(item.id) !== String(workerIdValue));
-        } else {
-          collectList.push({
-            id: workerIdValue,
-            name: worker.name,
-            avatar: worker.avatar,
-            price: worker.price,
-            addTime: Date.now()
-          });
-        }
-        wx.setStorageSync('collectList', collectList);
-        this.setData({ isCollected: !isCollected });
+        console.error('收藏操作失败:', err);
         wx.showToast({
-          title: isCollected ? '已取消收藏' : '收藏成功',
-          icon: isCollected ? 'none' : 'success'
+          title: err.message || '操作失败',
+          icon: 'none'
         });
       });
   },
@@ -365,18 +214,7 @@ Page({
    * 点击咨询
    */
   onContact() {
-    wx.showModal({
-      title: '联系客服',
-      content: '客服电话：400-888-8888',
-      confirmText: '拨打',
-      success: (res) => {
-        if (res.confirm) {
-          wx.makePhoneCall({
-            phoneNumber: '4008888888'
-          });
-        }
-      }
-    });
+    app.contactService();
   },
 
   /**
@@ -444,17 +282,10 @@ Page({
           .catch((err) => {
             wx.hideLoading();
             console.error('登录失败:', err);
-            
-            // 云函数失败时使用本地模拟登录
-            if (err.message && (err.message.includes('云函数未正确部署') || err.message.includes('云函数返回格式错误'))) {
-              console.log('使用本地模拟登录');
-              this.mockLogin(userInfo);
-            } else {
-              wx.showToast({
-                title: err.message || '登录失败，请重试',
-                icon: 'none'
-              });
-            }
+            wx.showToast({
+              title: err.message || '登录失败，请重试',
+              icon: 'none'
+            });
           });
       },
       fail: (err) => {
@@ -465,29 +296,6 @@ Page({
           icon: 'none'
         });
       }
-    });
-  },
-
-  /**
-   * 本地模拟登录（云函数未部署时使用）
-   */
-  mockLogin(userInfo) {
-    const mockUserInfo = {
-      _id: 'mock_user_' + Date.now(),
-      nickname: userInfo ? userInfo.nickName : '微信用户',
-      avatar: userInfo ? userInfo.avatarUrl : '/images/default-avatar.png',
-      phone: '',
-      role: 'user',
-      workerId: null
-    };
-    
-    app.globalData.userInfo = mockUserInfo;
-    app.globalData.isLogin = true;
-    wx.setStorageSync('userInfo', mockUserInfo);
-    
-    wx.showToast({
-      title: '登录成功',
-      icon: 'success'
     });
   },
 

@@ -1,0 +1,62 @@
+<view class="bookings-page">
+  <scroll-view
+    class="booking-list"
+    scroll-y="{{true}}"
+    bindscrolltolower="onLoadMore"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    refresher-background="#f5f5f5"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="list-content" wx:if="{{bookings.length > 0}}">
+      <view class="booking-card" wx:for="{{bookings}}" wx:key="_id">
+        <view class="header">
+          <view class="worker">
+            <image class="avatar" src="{{item.workerAvatar || '/images/default-avatar.png'}}" mode="aspectFill" />
+            <view class="meta">
+              <text class="name">{{item.workerName || '阿姨'}}</text>
+              <text class="time">提交于 {{item.createdAtText}}</text>
+            </view>
+          </view>
+          <text class="status">{{item.statusText}}</text>
+        </view>
+
+        <view class="detail-row" wx:if="{{item.serviceType}}">
+          <text class="label">服务类型</text>
+          <text class="value">{{item.serviceTypeText}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{item.startDate}}">
+          <text class="label">开始时间</text>
+          <text class="value">{{item.startDate}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{item.duration}}">
+          <text class="label">服务时长</text>
+          <text class="value">{{item.duration}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{item.address}}">
+          <text class="label">服务地址</text>
+          <text class="value address">{{item.address}}</text>
+        </view>
+        <view class="detail-row" wx:if="{{item.totalPrice}}">
+          <text class="label">预算金额</text>
+          <text class="value price">¥{{item.totalPrice}}</text>
+        </view>
+
+        <view class="actions" wx:if="{{item.status === 'pending' || item.status === 'confirmed'}}">
+          <button class="btn-cancel" data-booking-id="{{item._id}}" bindtap="onCancelBooking">取消预约</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="load-status">
+      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+      <text class="no-more" wx:if="{{!hasMore && bookings.length > 0}}">没有更多了</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!isLoading && bookings.length === 0}}">
+      <text class="empty-icon">🗂️</text>
+      <text class="empty-text">暂无预约记录</text>
+      <button class="btn-go" bindtap="onGoWorkers">去预约</button>
+    </view>
+  </scroll-view>
+</view>

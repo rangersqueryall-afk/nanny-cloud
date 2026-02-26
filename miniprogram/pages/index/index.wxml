@@ -30,7 +30,7 @@
   <view class="service-types card">
     <view class="section-title">服务类型</view>
     <view class="service-grid">
-      <view class="service-item" wx:for="{{serviceTypes}}" wx:key="id" bindtap="onServiceTap" data-type="{{item}}">
+      <view class="service-item" wx:for="{{serviceTypes}}" wx:key="id" bindtap="onServiceTap" data-type="{{item.filterType}}">
         <view class="service-icon" style="background: {{item.bgColor}}">
           <text class="icon-text">{{item.icon}}</text>
         </view>

@@ -258,16 +258,6 @@ Page({
     .then((res) => {
       let list = res.data.list || [];
       
-      // 本地搜索过滤（云函数未支持搜索时使用）
-      if (searchKeyword && list.length > 0) {
-        const keyword = searchKeyword.toLowerCase();
-        list = list.filter(worker => {
-          const nameMatch = worker.name && worker.name.toLowerCase().includes(keyword);
-          const skillMatch = worker.skills && worker.skills.some(s => s.toLowerCase().includes(keyword));
-          return nameMatch || skillMatch;
-        });
-      }
-      
       this.setData({
         workers: reset ? list : [...this.data.workers, ...list],
         page: page + 1,
@@ -279,146 +269,14 @@ Page({
     })
     .catch((err) => {
       console.error('加载阿姨列表失败:', err);
-      // 云函数未部署时使用本地数据
-      let localWorkers = this.getLocalWorkers();
-      
-      // 本地搜索过滤
-      if (searchKeyword) {
-        const keyword = searchKeyword.toLowerCase();
-        localWorkers = localWorkers.filter(worker => {
-          const nameMatch = worker.name.toLowerCase().includes(keyword);
-          const skillMatch = worker.skills && worker.skills.some(s => s.toLowerCase().includes(keyword));
-          return nameMatch || skillMatch;
-        });
-      }
-      
-      // 本地筛选过滤 - 服务类型
-      if (filters.type) {
-        localWorkers = localWorkers.filter(worker => {
-          return worker.serviceTypes && worker.serviceTypes.includes(filters.type);
-        });
-      }
-      
-      // 本地筛选过滤 - 价格范围
-      if (filters.priceRange) {
-        const [min, max] = filters.priceRange.split('-').map(Number);
-        localWorkers = localWorkers.filter(worker => {
-          const monthlyPrice = worker.price && worker.price.monthly ? worker.price.monthly : worker.price;
-          return monthlyPrice >= min && monthlyPrice <= max;
-        });
-      }
-      
-      // 本地筛选过滤 - 经验
-      if (filters.experience) {
-        const minExp = parseInt(filters.experience);
-        localWorkers = localWorkers.filter(worker => {
-          if (minExp === 0) {
-            return worker.experience < 1;
-          } else if (minExp === 1) {
-            return worker.experience >= 1 && worker.experience < 3;
-          } else if (minExp === 3) {
-            return worker.experience >= 3 && worker.experience < 5;
-          } else if (minExp === 5) {
-            return worker.experience >= 5;
-          }
-          return true;
-        });
-      }
-      
       this.setData({
-        workers: reset ? localWorkers : [...this.data.workers, ...localWorkers],
-        page: page + 1,
+        workers: reset ? [] : this.data.workers,
         hasMore: false,
         isLoading: false
       });
+      app.showToast(err.message || '加载失败');
       if (callback) callback();
     });
-  },
-
-  /**
-   * 获取本地阿姨数据
-   */
-  getLocalWorkers() {
-    return [
-      {
-        _id: 'w001',
-        name: '王秀芳',
-        avatar: '/images/worker-1.jpg',
-        age: 45,
-        hometown: '安徽合肥',
-        experience: 8,
-        serviceTypes: ['babysitter', 'nanny'],
-        price: { daily: 280, monthly: 7500 },
-        skills: ['婴儿护理', '辅食制作', '早教启蒙', '家务清洁'],
-        rating: 4.9,
-        reviewCount: 128
-      },
-      {
-        _id: 'w002',
-        name: '李桂英',
-        avatar: '/images/worker-2.jpg',
-        age: 52,
-        hometown: '江苏南京',
-        experience: 12,
-        serviceTypes: ['maternity', 'babysitter'],
-        price: { daily: 350, monthly: 9800 },
-        skills: ['产妇护理', '新生儿护理', '月子餐', '催乳'],
-        rating: 5.0,
-        reviewCount: 89
-      },
-      {
-        _id: 'w003',
-        name: '张美华',
-        avatar: '/images/worker-3.jpg',
-        age: 38,
-        hometown: '浙江杭州',
-        experience: 5,
-        serviceTypes: ['nanny'],
-        price: { daily: 220, monthly: 6000 },
-        skills: ['家务清洁', '烹饪', '接送孩子', '陪伴老人'],
-        rating: 4.7,
-        reviewCount: 56
-      },
-      {
-        _id: 'w004',
-        name: '陈雅琴',
-        avatar: '/images/worker-4.jpg',
-        age: 48,
-        hometown: '四川成都',
-        experience: 10,
-        serviceTypes: ['babysitter', 'nanny'],
-        price: { daily: 300, monthly: 8000 },
-        skills: ['婴儿护理', '早教', '辅食制作', '家务清洁', '烹饪'],
-        rating: 4.8,
-        reviewCount: 95
-      },
-      {
-        _id: 'w005',
-        name: '刘小红',
-        avatar: '/images/worker-5.jpg',
-        age: 42,
-        hometown: '湖南长沙',
-        experience: 6,
-        serviceTypes: ['maternity'],
-        price: { daily: 380, monthly: 10800 },
-        skills: ['产妇护理', '新生儿护理', '月子餐', '产后恢复'],
-        rating: 4.9,
-        reviewCount: 67
-      },
-      {
-        _id: 'w006',
-        name: '赵淑芬',
-        avatar: '/images/default-avatar.png',
-        age: 55,
-        hometown: '山东青岛',
-        experience: 15,
-        serviceTypes: ['nanny'],
-        price: { daily: 250, monthly: 6800 },
-        skills: ['家务清洁', '烹饪', '照顾老人', '收纳整理'],
-        rating: 4.6,
-        reviewCount: 112
-      }
-    ];
   },
 
   /**
@@ -517,17 +375,10 @@ Page({
           .catch((err) => {
             wx.hideLoading();
             console.error('登录失败:', err);
-            
-            // 云函数失败时使用本地模拟登录
-            if (err.message && (err.message.includes('云函数未正确部署') || err.message.includes('云函数返回格式错误'))) {
-              console.log('使用本地模拟登录');
-              this.mockLogin(userInfo);
-            } else {
-              wx.showToast({
-                title: err.message || '登录失败，请重试',
-                icon: 'none'
-              });
-            }
+            wx.showToast({
+              title: err.message || '登录失败，请重试',
+              icon: 'none'
+            });
           });
       },
       fail: (err) => {
@@ -541,26 +392,5 @@ Page({
     });
   },
 
-  /**
-   * 本地模拟登录（云函数未部署时使用）
-   */
-  mockLogin(userInfo) {
-    const mockUserInfo = {
-      _id: 'mock_user_' + Date.now(),
-      nickname: userInfo ? userInfo.nickName : '微信用户',
-      avatar: userInfo ? userInfo.avatarUrl : '/images/default-avatar.png',
-      phone: '',
-      role: 'user',
-      workerId: null
-    };
-    
-    app.globalData.userInfo = mockUserInfo;
-    app.globalData.isLogin = true;
-    wx.setStorageSync('userInfo', mockUserInfo);
-    
-    wx.showToast({
-      title: '登录成功',
-      icon: 'success'
-    });
   }
 });

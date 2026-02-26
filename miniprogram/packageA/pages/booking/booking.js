@@ -83,23 +83,29 @@ Page({
    * 加载阿姨信息
    */
   loadWorkerInfo(id) {
-    // 模拟API请求
-    setTimeout(() => {
-      const mockWorker = {
-        id: parseInt(id),
-        name: '王阿姨',
-        age: 45,
-        experience: 8,
-        price: 6500,
-        avatar: `https://i.pravatar.cc/150?img=${id}`
-      };
-      
-      this.setData({
-        worker: mockWorker
-      }, () => {
-        this.calculatePrice();
+    app.callCloudFunction('worker', 'getDetail', { id })
+      .then((res) => {
+        const worker = res.data || {};
+        const monthly = worker.price && worker.price.monthly ? worker.price.monthly : 0;
+        this.setData({
+          worker: {
+            id: worker._id || id,
+            name: worker.name || '阿姨',
+            age: worker.age || 0,
+            experience: worker.experience || 0,
+            price: monthly,
+            avatar: worker.avatar || '/images/default-avatar.png'
+          }
+        }, () => {
+          this.calculatePrice();
+        });
+      })
+      .catch((err) => {
+        wx.showToast({
+          title: err.message || '加载阿姨信息失败',
+          icon: 'none'
+        });
       });
-    }, 300);
   },
 
   /**
@@ -348,23 +354,27 @@ Page({
       totalPrice: this.data.totalPrice
     };
     
-    console.log('提交订单:', orderData);
-    
-    // 模拟提交
-    setTimeout(() => {
-      this.setData({ isSubmitting: false });
-      
-      wx.showToast({
-        title: '预约成功',
-        icon: 'success'
-      });
-      
-      // 跳转到订单列表
-      setTimeout(() => {
-        wx.switchTab({
-          url: '/pages/orders/orders'
+    console.log('提交预约:', orderData);
+
+    app.callCloudFunction('worker', 'bookWorker', orderData)
+      .then(() => {
+        this.setData({ isSubmitting: false });
+        wx.showToast({
+          title: '预约成功',
+          icon: 'success'
         });
-      }, 1500);
-    }, 1500);
+        setTimeout(() => {
+          wx.navigateTo({
+            url: '/packageB/pages/bookings/bookings'
+          });
+        }, 1200);
+      })
+      .catch((err) => {
+        this.setData({ isSubmitting: false });
+        wx.showToast({
+          title: err.message || '预约失败',
+          icon: 'none'
+        });
+      });
   }
 });

@@ -200,6 +200,32 @@ App({
   },
 
   /**
+   * 统一联系客服弹窗
+   * @param {object} options
+   * @param {string} options.phoneNumber - 客服电话（默认4008888888）
+   * @param {string} options.title - 弹窗标题
+   * @param {string} options.content - 弹窗文案
+   * @param {string} options.confirmText - 确认按钮文案
+   */
+  contactService(options = {}) {
+    const phoneNumber = options.phoneNumber || '13581711930';
+    const title = options.title || '联系客服';
+    const content = options.content || `客服电话：${phoneNumber}\n工作时间：9:00-18:00\n如有任何问题，请随时联系我们！`;
+    const confirmText = options.confirmText || '拨打';
+
+    wx.showModal({
+      title,
+      content,
+      confirmText,
+      success: (res) => {
+        if (res.confirm) {
+          wx.makePhoneCall({ phoneNumber });
+        }
+      }
+    });
+  },
+
+  /**
    * 上传图片到云存储
    * @param {string} filePath - 本地文件路径
    * @param {string} cloudPath - 云端路径

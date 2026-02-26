@@ -134,6 +134,13 @@ Page({
 
     app.callCloudFunction('user', 'registerWorker', data)
       .then((res) => {
+        const workerId = res.data && res.data.workerId;
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo.role = 'worker';
+          app.globalData.userInfo.workerId = workerId || app.globalData.userInfo.workerId;
+          wx.setStorageSync('userInfo', app.globalData.userInfo);
+        }
+
         app.hideLoading();
         wx.showModal({
           title: '注册成功',

@@ -1,9 +1,9 @@
-.favorites-page {
+.bookings-page {
   min-height: 100vh;
   background: #f5f5f5;
 }
 
-.favorites-list {
+.booking-list {
   height: 100vh;
 }
 
@@ -11,7 +11,7 @@
   padding: 20rpx 24rpx 0;
 }
 
-.favorite-card {
+.booking-card {
   background: #fff;
   border-radius: 16rpx;
   padding: 24rpx;
@@ -19,66 +19,102 @@
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 
-.main {
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.worker {
   display: flex;
   align-items: center;
-}
-
-.avatar {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.info {
-  margin-left: 18rpx;
   min-width: 0;
   flex: 1;
 }
 
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.meta {
+  margin-left: 14rpx;
+  min-width: 0;
+}
+
 .name {
   display: block;
-  font-size: 32rpx;
-  color: #333;
+  font-size: 30rpx;
   font-weight: 600;
+  color: #333;
 }
 
 .time {
-  margin-top: 8rpx;
+  margin-top: 6rpx;
   display: block;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #999;
 }
 
+.status {
+  margin-left: 16rpx;
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: #ff6b6b;
+  background: #fff1f1;
+  padding: 6rpx 14rpx;
+  border-radius: 20rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 10rpx;
+}
+
+.label {
+  width: 120rpx;
+  color: #999;
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.address {
+  line-height: 1.45;
+}
+
+.price {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
 .actions {
+  margin-top: 18rpx;
   display: flex;
   justify-content: flex-end;
-  margin-top: 20rpx;
 }
 
-.btn {
+.btn-cancel {
   margin: 0;
-  height: 60rpx;
-  line-height: 60rpx;
-  border-radius: 30rpx;
-  font-size: 24rpx;
-  padding: 0 24rpx;
-}
-
-.btn::after {
-  border: none;
-}
-
-.btn-detail {
-  background: #fff1f1;
-  color: #ff6b6b;
-}
-
-.btn-remove {
-  margin-left: 16rpx;
+  width: 168rpx;
+  height: 58rpx;
+  line-height: 58rpx;
+  border-radius: 29rpx;
   background: #f6f6f6;
   color: #666;
+  font-size: 24rpx;
+}
+
+.btn-cancel::after {
+  border: none;
 }
 
 .load-status {
@@ -110,9 +146,9 @@
 
 .btn-go {
   margin-top: 28rpx;
-  width: 280rpx;
-  /* height: 72rpx;
-  line-height: 72rpx; */
+  width: 260rpx;
+  height: 72rpx;
+  line-height: 72rpx;
   border-radius: 36rpx;
   background: #ff6b6b;
   color: #fff;
