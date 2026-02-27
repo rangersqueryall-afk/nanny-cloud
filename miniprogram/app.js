@@ -23,8 +23,8 @@ App({
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
     } else {
       try {
-        // 使用默认环境（自动获取当前环境）
         wx.cloud.init({
+          env: 'cloud1-9gb9q6d09a380783',
           traceUser: true
         });
         console.log('云开发初始化成功');

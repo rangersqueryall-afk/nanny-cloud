@@ -28,7 +28,7 @@ exports.main = async (event, context) => {
   }
 };
 
-async function getBanners() {
+async function getBanners() {  
   const bannerRes = await db.collection('banners')
     .where({ isActive: true })
     .orderBy('sortOrder', 'asc')
@@ -37,15 +37,16 @@ async function getBanners() {
   return { success: true, data: bannerRes.data, message: '获取成功' };
 }
 
-async function getRecommendations(data) {
+async function getRecommendations(data) {  
   const limit = data && data.limit ? data.limit : 8;
 
   const workerRes = await db.collection('workers')
-    .where({ isPublic: true, isVerified: true })
+    .where({ isPublic: true})
     .orderBy('rating', 'desc')
     .limit(limit)
     .get();
 
+    console.log('获取推荐阿姨数据:', workerRes.data);
   return { success: true, data: workerRes.data, message: '获取成功' };
 }
 

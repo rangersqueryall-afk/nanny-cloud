@@ -79,6 +79,10 @@ exports.main = async (event, context) => {
 };
 
 async function getList(data) {
+  console.log('=== getList 调试信息 ===');
+  console.log('当前环境ID:', cloud.getWXContext().ENV);
+  console.log('传入参数:', data);
+  
   const _ = db.command;
   const page = data && data.page ? data.page : 1;
   const limit = data && data.limit ? data.limit : 10;
