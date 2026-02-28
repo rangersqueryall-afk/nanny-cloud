@@ -1,0 +1,114 @@
+<view class="settings-page">
+  <view class="card">
+    <view class="title">我的阿姨信息</view>
+    <view class="form-item">
+      <text class="label">头像</text>
+      <view class="avatar-upload" bindtap="chooseAvatar">
+        <image wx:if="{{form.avatar}}" class="avatar" src="{{form.avatar}}" mode="aspectFill" />
+        <view wx:else class="avatar-placeholder">上传头像</view>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="label">姓名</text>
+      <input class="input" value="{{form.name}}" data-field="name" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">年龄</text>
+      <input class="input" type="number" value="{{form.age}}" data-field="age" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">籍贯</text>
+      <input class="input" value="{{form.hometown}}" data-field="hometown" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">手机号</text>
+      <input class="input" type="number" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">经验(年)</text>
+      <input class="input" type="number" value="{{form.experience}}" data-field="experience" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">技能（逗号分隔）</text>
+      <input class="input" value="{{skillsInput}}" bindinput="onSkillsInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">月薪</text>
+      <input class="input" type="number" value="{{form.priceMonthly}}" data-field="priceMonthly" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">日薪</text>
+      <input class="input" type="number" value="{{form.priceDaily}}" data-field="priceDaily" bindinput="onInput" />
+    </view>
+    <view class="form-item">
+      <text class="label">个人简介</text>
+      <textarea class="textarea" value="{{form.bio}}" data-field="bio" bindinput="onInput" maxlength="300" />
+    </view>
+    <view class="row row-gap">
+      <text class="label">认证状态</text>
+      <text class="readonly">{{isVerified ? '已认证' : '待认证'}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title">接单设置</view>
+    <view class="row">
+      <text class="label">是否接单</text>
+      <switch color="#ff6b6b" checked="{{status === 'available'}}" bindchange="onStatusChange" />
+    </view>
+    <text class="hint">{{status === 'available' ? '开启后可接单并对雇主公开' : '关闭后暂停接单并自动隐藏'}}</text>
+
+    <view class="sub-title">服务类型</view>
+    <view class="chip-wrap">
+      <view
+        class="chip {{selectedServiceTypes.includes(item.value) ? 'active' : ''}}"
+        wx:for="{{serviceOptions}}"
+        wx:key="value"
+        data-value="{{item.value}}"
+        bindtap="toggleServiceType"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view class="sub-title">可选接单时间</view>
+    <radio-group bindchange="onShiftChange">
+      <label class="option-row" wx:for="{{shiftOptions}}" wx:key="value">
+        <radio value="{{item.value}}" checked="{{shiftType === item.value}}" color="#ff6b6b" />
+        <text>{{item.label}}</text>
+      </label>
+    </radio-group>
+
+    <view class="sub-title">接单周期</view>
+    <radio-group bindchange="onWeekDaysChange">
+      <label class="option-row" wx:for="{{weekOptions}}" wx:key="value">
+        <radio value="{{item.value}}" checked="{{weekDays === item.value}}" color="#ff6b6b" />
+        <text>{{item.label}}</text>
+      </label>
+    </radio-group>
+
+    <view class="row row-gap">
+      <text class="label">是否住家</text>
+      <switch color="#ff6b6b" checked="{{isLiveIn}}" bindchange="onLiveInChange" />
+    </view>
+
+    <block wx:if="{{selectedServiceTypes.includes('hourly')}}">
+      <view class="sub-title">钟点工具体时间</view>
+      <view class="time-row">
+        <picker mode="time" value="{{hourlyStart}}" bindchange="onHourlyStartChange">
+          <view class="time-picker">开始 {{hourlyStart}}</view>
+        </picker>
+        <picker mode="time" value="{{hourlyEnd}}" bindchange="onHourlyEndChange">
+          <view class="time-picker">结束 {{hourlyEnd}}</view>
+        </picker>
+      </view>
+    </block>
+
+    <view class="sub-title">补充说明</view>
+    <textarea class="textarea" placeholder="例如：可接紧急单，节假日需提前沟通" value="{{note}}" bindinput="onNoteInput" maxlength="120" />
+  </view>
+
+  <button class="btn-submit {{isSubmitting ? 'disabled' : ''}}" bindtap="onSubmit" loading="{{isSubmitting}}">
+    保存设置
+  </button>
+</view>

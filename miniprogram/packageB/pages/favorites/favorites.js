@@ -1,4 +1,5 @@
 const app = getApp();
+const { USER_ROLE } = require('../../../utils/constants');
 
 Page({
   data: {
@@ -11,7 +12,28 @@ Page({
   },
 
   onLoad() {
-    this.loadFavorites(true);
+    this.ensureEmployerAccess();
+  },
+
+  ensureEmployerAccess() {
+    app.callCloudFunction('user', 'getProfile')
+      .then((res) => {
+        const role = res && res.data && res.data.role ? res.data.role : USER_ROLE.USER;
+        if (role === USER_ROLE.WORKER || role === USER_ROLE.PLATFORM) {
+          app.showToast('仅雇主可使用收藏');
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 600);
+          return;
+        }
+        this.loadFavorites(true);
+      })
+      .catch((err) => {
+        app.showToast(err.message || '请先登录');
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 600);
+      });
   },
 
   onPullDownRefresh() {

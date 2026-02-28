@@ -37,6 +37,10 @@ exports.main = async (event, context) => {
       return await getMyWorkerInfo(OPENID);
     } else if (action === 'updateMyWorkerInfo') {
       return await updateMyWorkerInfo(OPENID, data);
+    } else if (action === 'getMyWorkerSettings') {
+      return await getMyWorkerSettings(OPENID);
+    } else if (action === 'updateMyWorkerSettings') {
+      return await updateMyWorkerSettings(OPENID, data);
     } else {
       return { success: false, message: '未知操作: ' + action };
     }
@@ -124,8 +128,9 @@ async function login(openid, data) {
     
     console.log('最终 user 数据:', { nickname: user.nickname, avatar: user.avatar });
 
+    const role = user.role || 'user';
     let workerInfo = null;
-    if (user.role === 'worker' && user.workerId) {
+    if (role === 'worker' && user.workerId) {
       try {
         const workerRes = await db.collection('workers').doc(user.workerId).get();
         workerInfo = workerRes.data;
@@ -145,7 +150,7 @@ async function login(openid, data) {
           nickname: user.nickname,
           avatar: user.avatar,
           phone: user.phone,
-          role: user.role,
+          role: role,
           workerId: user.workerId
         },
         workerInfo: workerInfo
@@ -166,8 +171,9 @@ async function getProfile(openid) {
     }
     const user = userRes.data[0];
 
+    const role = user.role || 'user';
     let workerInfo = null;
-    if (user.role === 'worker' && user.workerId) {
+    if (role === 'worker' && user.workerId) {
       try {
         const workerRes = await db.collection('workers').doc(user.workerId).get();
         workerInfo = workerRes.data;
@@ -186,7 +192,7 @@ async function getProfile(openid) {
         nickname: user.nickname,
         avatar: user.avatar,
         phone: user.phone,
-        role: user.role,
+        role: role,
         workerId: user.workerId,
         workerInfo: workerInfo
       },
@@ -222,7 +228,13 @@ async function registerWorker(openid, data) {
     }
     const user = userRes.data[0];
 
-    if (user.role === 'worker') {
+    const role = user.role || 'user';
+
+    if (role === 'platform') {
+      return { success: false, message: '平台管理员账号不可注册为阿姨' };
+    }
+
+    if (role === 'worker') {
       return { success: false, message: '您已注册为阿姨' };
     }
 
@@ -363,6 +375,8 @@ async function updateMyWorkerInfo(openid, data) {
     }
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.isVerified !== undefined) updateData.isVerified = !!data.isVerified;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.acceptPreferences !== undefined) updateData.acceptPreferences = data.acceptPreferences;
     if (data.isPublic !== undefined) {
       updateData.isPublic = !!data.isPublic;
       updateData.status = data.isPublic ? 'available' : 'offline';
@@ -375,6 +389,90 @@ async function updateMyWorkerInfo(openid, data) {
     return { success: true, message: '更新成功' };
   } catch (error) {
     console.error('updateMyWorkerInfo函数错误:', error);
+    return { success: false, message: error.message };
+  }
+}
+
+async function getMyWorkerSettings(openid) {
+  try {
+    const userRes = await db.collection('users').where({ openid: openid }).get();
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' };
+    }
+    const user = userRes.data[0];
+    if (user.role !== 'worker' || !user.workerId) {
+      return { success: false, message: '您不是阿姨' };
+    }
+
+    const workerRes = await db.collection('workers').doc(user.workerId).get();
+    const worker = workerRes.data || {};
+    return {
+      success: true,
+      data: {
+        status: worker.status || 'offline',
+        isPublic: !!worker.isPublic,
+        isVerified: !!worker.isVerified,
+        serviceTypes: worker.serviceTypes || [],
+        acceptPreferences: worker.acceptPreferences || {
+          serviceTypes: worker.serviceTypes || [],
+          shiftType: 'daytime',
+          weekDays: 'mon_fri',
+          isLiveIn: false,
+          hourlyStart: '09:00',
+          hourlyEnd: '18:00',
+          workTime: '',
+          note: ''
+        }
+      },
+      message: '获取成功'
+    };
+  } catch (error) {
+    console.error('getMyWorkerSettings函数错误:', error);
+    return { success: false, message: error.message };
+  }
+}
+
+async function updateMyWorkerSettings(openid, data) {
+  try {
+    const userRes = await db.collection('users').where({ openid: openid }).get();
+    if (userRes.data.length === 0) {
+      return { success: false, message: '用户不存在' };
+    }
+    const user = userRes.data[0];
+    if (user.role !== 'worker' || !user.workerId) {
+      return { success: false, message: '您不是阿姨' };
+    }
+
+    const safeStatus = data && data.status === 'available' ? 'available' : 'offline';
+    const safeIsPublic = safeStatus === 'available';
+    const safePrefs = data && data.acceptPreferences ? data.acceptPreferences : {};
+    const serviceTypes = Array.isArray(safePrefs.serviceTypes) ? safePrefs.serviceTypes : [];
+    const finalStatus = safeStatus;
+
+    await db.collection('workers').doc(user.workerId).update({
+      data: {
+        status: finalStatus,
+        isPublic: safeIsPublic,
+        acceptPreferences: {
+          serviceTypes,
+          shiftType: safePrefs.shiftType || 'daytime',
+          weekDays: safePrefs.weekDays || 'mon_fri',
+          isLiveIn: !!safePrefs.isLiveIn,
+          hourlyStart: safePrefs.hourlyStart || '09:00',
+          hourlyEnd: safePrefs.hourlyEnd || '18:00',
+          workTime: safePrefs.workTime || '',
+          note: safePrefs.note || ''
+        },
+        updatedAt: db.serverDate()
+      }
+    });
+
+    return {
+      success: true,
+      message: '接单设置已更新'
+    };
+  } catch (error) {
+    console.error('updateMyWorkerSettings函数错误:', error);
     return { success: false, message: error.message };
   }
 }

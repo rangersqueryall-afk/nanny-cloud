@@ -1,75 +1,261 @@
 <!-- 首页 -->
 <view class="index-page">
-  <!-- 顶部搜索栏 -->
-  <view class="search-header">
-    <view class="search-box" bindtap="onSearchTap">
-      <text class="search-icon">🔍</text>
-      <text class="search-placeholder">搜索阿姨姓名、技能...</text>
+  <block wx:if="{{!isWorkerHome && !isPlatformHome}}">
+    <!-- 顶部搜索栏 -->
+    <view class="search-header">
+      <view class="search-box" bindtap="onSearchTap">
+        <text class="search-icon">🔍</text>
+        <text class="search-placeholder">搜索阿姨姓名、技能...</text>
+      </view>
     </view>
-  </view>
-  
-  <!-- 轮播图 -->
-  <view class="banner-section">
-    <swiper 
-      class="banner-swiper" 
-      indicator-dots="{{true}}" 
-      autoplay="{{true}}" 
-      interval="3000" 
-      duration="500"
-      circular="{{true}}"
-      indicator-color="rgba(255,255,255,0.5)"
-      indicator-active-color="#FF6B6B"
-    >
-      <swiper-item wx:for="{{banners}}" wx:key="id">
-        <image class="banner-image" src="{{item.image}}" mode="aspectFill" bindtap="onBannerTap" data-item="{{item}}"/>
-      </swiper-item>
-    </swiper>
-  </view>
-  
-  <!-- 服务类型快捷入口 -->
-  <view class="service-types card">
-    <view class="section-title">服务类型</view>
-    <view class="service-grid">
-      <view class="service-item" wx:for="{{serviceTypes}}" wx:key="id" bindtap="onServiceTap" data-type="{{item.filterType}}">
-        <view class="service-icon" style="background: {{item.bgColor}}">
-          <text class="icon-text">{{item.icon}}</text>
+
+    <!-- 轮播图 -->
+    <view class="banner-section">
+      <swiper
+        class="banner-swiper"
+        indicator-dots="{{true}}"
+        autoplay="{{true}}"
+        interval="3000"
+        duration="500"
+        circular="{{true}}"
+        indicator-color="rgba(255,255,255,0.5)"
+        indicator-active-color="#FF6B6B"
+      >
+        <swiper-item wx:for="{{banners}}" wx:key="id">
+          <image class="banner-image" src="{{item.image}}" mode="aspectFill" bindtap="onBannerTap" data-item="{{item}}" />
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 服务类型快捷入口 -->
+    <view class="service-types card">
+      <view class="section-title">服务类型</view>
+      <view class="service-grid">
+        <view class="service-item" wx:for="{{serviceTypes}}" wx:key="id" bindtap="onServiceTap" data-type="{{item.filterType}}">
+          <view class="service-icon" style="background: {{item.bgColor}}">
+            <text class="icon-text">{{item.icon}}</text>
+          </view>
+          <text class="service-name">{{item.name}}</text>
+          <text class="service-desc">{{item.desc}}</text>
         </view>
-        <text class="service-name">{{item.name}}</text>
-        <text class="service-desc">{{item.desc}}</text>
       </view>
     </view>
-  </view>
-  
-  <!-- 服务优势 -->
-  <view class="advantages card">
-    <view class="advantage-item" wx:for="{{advantages}}" wx:key="index">
-      <text class="advantage-icon">{{item.icon}}</text>
-      <text class="advantage-text">{{item.text}}</text>
-    </view>
-  </view>
-  
-  <!-- 推荐阿姨 -->
-  <view class="recommend-section">
-    <view class="section-header">
-      <view class="section-title">推荐阿姨</view>
-      <view class="more-link" bindtap="onMoreTap">
-        <text>查看更多</text>
-        <text class="arrow">></text>
+
+    <!-- 服务优势 -->
+    <view class="advantages card">
+      <view class="advantage-item" wx:for="{{advantages}}" wx:key="index">
+        <text class="advantage-icon">{{item.icon}}</text>
+        <text class="advantage-text">{{item.text}}</text>
       </view>
     </view>
-    
-    <!-- 推荐列表 -->
-    <view class="worker-list">
-      <worker-card 
-        wx:for="{{recommendWorkers}}" 
-        wx:key="_id"
-        worker="{{item}}"
-        bind:cardtap="onWorkerTap"
-        bind:book="onBookTap"
-      />
+
+    <!-- 推荐阿姨 -->
+    <view class="recommend-section">
+      <view class="section-header">
+        <view class="section-title">推荐阿姨</view>
+        <view class="more-link" bindtap="onMoreTap">
+          <text>查看更多</text>
+          <text class="arrow">></text>
+        </view>
+      </view>
+
+      <view class="worker-list">
+        <worker-card
+          wx:for="{{recommendWorkers}}"
+          wx:key="_id"
+          worker="{{item}}"
+          bind:cardtap="onWorkerTap"
+          bind:book="onBookTap"
+        />
+      </view>
     </view>
-  </view>
-  
-  <!-- 底部占位 -->
+  </block>
+
+  <block wx:elif="{{isWorkerHome}}">
+    <view class="worker-home">
+      <view class="worker-hero card">
+        <view class="worker-hero-title">阿姨工作台</view>
+        <view class="worker-hero-row">
+          <view>
+            <text class="hero-label">接单状态</text>
+            <text class="hero-value {{workerSettings && workerSettings.status === 'available' ? 'online' : 'offline'}}">
+              {{workerSettings && workerSettings.status === 'available' ? '在线接单' : '暂停接单'}}
+            </text>
+          </view>
+          <view class="hero-actions">
+            <button class="hero-btn" bindtap="onGoWorkerSettings">接单设置</button>
+          </view>
+        </view>
+      </view>
+
+      <view class="worker-stats card">
+        <view class="stats-item">
+          <text class="stats-num">{{workerStats.pendingCount}}</text>
+          <text class="stats-text">待处理预约</text>
+        </view>
+        <view class="stats-item">
+          <text class="stats-num">{{workerStats.interviewCount}}</text>
+          <text class="stats-text">待面试安排</text>
+        </view>
+        <view class="stats-item">
+          <text class="stats-num">{{workerStats.orderCreatedCount}}</text>
+          <text class="stats-text">已转订单</text>
+        </view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">待处理预约</view>
+          <view class="more-link" bindtap="onGoWorkerBookings"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{pendingBookings.length > 0}}">
+          <view class="mini-card" wx:for="{{pendingBookings}}" wx:key="_id">
+            <text class="mini-title">{{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">服务类型：{{item.serviceType}}</text>
+            <text class="mini-sub">开始时间：{{item.startDate || '-'}}</text>
+            <view class="mini-actions">
+              <button class="mini-btn reject" data-booking-id="{{item._id}}" bindtap="onWorkerReject">拒绝</button>
+              <button class="mini-btn accept" data-booking-id="{{item._id}}" bindtap="onWorkerAccept">接受</button>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无待处理预约</view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">面试安排</view>
+          <view class="more-link" bindtap="onGoWorkerBookings"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{interviewBookings.length > 0}}">
+          <view class="mini-card" wx:for="{{interviewBookings}}" wx:key="_id">
+            <text class="mini-title">{{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">面试时间：{{item.interviewTime || '待定'}}</text>
+            <text class="mini-sub">备注：{{item.platformNote || '请关注平台通知'}}</text>
+            <view class="mini-actions">
+              <button class="mini-btn contact" bindtap="onContactPlatform">联系平台</button>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无面试安排</view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">已转订单</view>
+          <view class="more-link" bindtap="onGoWorkerBookings"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{orderCreatedBookings.length > 0}}">
+          <view class="mini-card" wx:for="{{orderCreatedBookings}}" wx:key="_id">
+            <text class="mini-title">{{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">开始时间：{{item.startDate || '-'}}</text>
+            <text class="mini-sub">服务地址：{{item.address || '-'}}</text>
+            <view class="mini-actions">
+              <button class="mini-btn contact" data-order-id="{{item.orderId}}" bindtap="onViewOrder">查看订单</button>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无已转订单</view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-title">资料与成长</view>
+        <view class="rule-row">
+          <text>公开状态：{{workerInfo && workerInfo.isPublic ? '已开放' : '已隐藏'}}</text>
+          <text>认证状态：{{workerInfo && workerInfo.isVerified ? '已认证' : '待认证'}}</text>
+        </view>
+        <view class="mini-actions">
+          <button class="mini-btn contact" bindtap="onGoRulesTraining">平台规则/培训</button>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:elif="{{isPlatformHome}}">
+    <view class="platform-home">
+      <view class="platform-hero card">
+        <view class="worker-hero-title">平台工作台</view>
+        <view class="platform-hero-row">
+          <text class="mini-sub">聚焦面试安排与结果流转</text>
+          <button class="hero-btn" bindtap="onGoInterviewAdmin">完整管理</button>
+        </view>
+      </view>
+
+      <view class="worker-stats card">
+        <view class="stats-item">
+          <text class="stats-num">{{platformStats.acceptedCount}}</text>
+          <text class="stats-text">待安排</text>
+        </view>
+        <view class="stats-item">
+          <text class="stats-num">{{platformStats.scheduledCount}}</text>
+          <text class="stats-text">待结果</text>
+        </view>
+        <view class="stats-item">
+          <text class="stats-num">{{platformStats.doneCount}}</text>
+          <text class="stats-text">已处理</text>
+        </view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">待安排面试</view>
+          <view class="more-link" bindtap="onGoInterviewAdmin"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{platformAcceptedBookings.length > 0}}">
+          <view class="mini-card" wx:for="{{platformAcceptedBookings}}" wx:key="_id">
+            <text class="mini-title">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">服务类型：{{item.serviceType || '-'}}</text>
+            <text class="mini-sub">预约开始：{{item.startDate || '-'}}</text>
+            <view class="mini-actions">
+              <button class="mini-btn accept" data-booking-id="{{item._id}}" bindtap="onPlatformScheduleInterview">安排面试</button>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无待安排面试</view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">待录入结果</view>
+          <view class="more-link" bindtap="onGoInterviewAdmin"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{platformInterviewBookings.length > 0}}">
+          <view class="mini-card" wx:for="{{platformInterviewBookings}}" wx:key="_id">
+            <text class="mini-title">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">面试时间：{{item.interviewTime || '待定'}}</text>
+            <view class="mini-actions">
+              <button class="mini-btn reject" data-booking-id="{{item._id}}" data-passed="{{false}}" bindtap="onPlatformSetResult">不通过</button>
+              <button class="mini-btn accept" data-booking-id="{{item._id}}" data-passed="{{true}}" bindtap="onPlatformSetResult">通过</button>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无待录入结果</view>
+      </view>
+
+      <view class="worker-section card">
+        <view class="section-header">
+          <view class="section-title">最近已处理</view>
+          <view class="more-link" bindtap="onGoInterviewAdmin"><text>查看更多 ></text></view>
+        </view>
+        <view wx:if="{{platformDoneToday.length > 0 || platformDoneRecent7.length > 0}}">
+          <view class="group-title" wx:if="{{platformDoneToday.length > 0}}">今天</view>
+          <view class="mini-card" wx:for="{{platformDoneToday}}" wx:key="_id">
+            <text class="mini-title">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">当前状态：{{item.statusText}}</text>
+            <text class="mini-sub">处理时间：{{item.doneTimeText}}</text>
+          </view>
+
+          <view class="group-title" wx:if="{{platformDoneRecent7.length > 0}}">近7天</view>
+          <view class="mini-card" wx:for="{{platformDoneRecent7}}" wx:key="_id">
+            <text class="mini-title">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
+            <text class="mini-sub">当前状态：{{item.statusText}}</text>
+            <text class="mini-sub">处理时间：{{item.doneTimeText}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无已处理记录</view>
+      </view>
+    </view>
+  </block>
+
   <view class="bottom-placeholder"></view>
 </view>

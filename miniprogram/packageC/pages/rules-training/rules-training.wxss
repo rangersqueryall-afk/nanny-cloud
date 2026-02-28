@@ -1,0 +1,75 @@
+.rules-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20rpx 24rpx 40rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 14rpx;
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10rpx;
+}
+
+.dot {
+  color: #ff6b6b;
+  margin-right: 8rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.text {
+  flex: 1;
+  color: #555;
+  font-size: 25rpx;
+  line-height: 36rpx;
+}
+
+.training-item {
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f1f1f1;
+}
+
+.training-item:last-child {
+  border-bottom: none;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.name {
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.duration {
+  color: #ff6b6b;
+  font-size: 22rpx;
+  background: #fff1f1;
+  padding: 4rpx 12rpx;
+  border-radius: 18rpx;
+}
+
+.desc {
+  margin-top: 8rpx;
+  color: #888;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}

@@ -173,3 +173,172 @@
   padding: 24rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
 }
+
+/* 阿姨首页 */
+.worker-home {
+  padding: 20rpx 30rpx 0;
+}
+
+.worker-hero-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.worker-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-label {
+  display: block;
+  font-size: 24rpx;
+  color: #888;
+}
+
+.hero-value {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.hero-value.online {
+  color: #18a058;
+}
+
+.hero-value.offline {
+  color: #999;
+}
+
+.hero-btn {
+  margin: 0;
+  width: 164rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  color: #fff;
+  background: #ff6b6b;
+}
+
+.hero-btn::after {
+  border: none;
+}
+
+.worker-stats {
+  margin-top: 20rpx;
+  display: flex;
+  justify-content: space-between;
+}
+
+.worker-stats .stats-item {
+  flex: 1;
+  text-align: center;
+}
+
+.worker-stats .stats-num {
+  display: block;
+  font-size: 40rpx;
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.worker-stats .stats-text {
+  margin-top: 6rpx;
+  display: block;
+  font-size: 22rpx;
+  color: #888;
+}
+
+.worker-section {
+  margin-top: 20rpx;
+}
+
+.mini-card {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f3f3f3;
+}
+
+.mini-card:last-child {
+  border-bottom: none;
+}
+
+.mini-title {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.mini-sub {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #777;
+}
+
+.mini-actions {
+  margin-top: 12rpx;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+
+.mini-btn {
+  margin: 0;
+  width: 150rpx;
+  border-radius: 28rpx;
+  font-size: 22rpx;
+}
+
+.mini-btn::after {
+  border: none;
+}
+
+.mini-btn.accept {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+.mini-btn.reject {
+  background: #f6f6f6;
+  color: #666;
+}
+
+.mini-btn.contact {
+  background: #fff1f1;
+  color: #ff6b6b;
+}
+
+.empty-tip {
+  padding: 20rpx 0 10rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.rule-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 平台首页 */
+.platform-home {
+  padding: 20rpx 30rpx 0;
+}
+
+.platform-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.group-title {
+  margin-top: 10rpx;
+  margin-bottom: 4rpx;
+  font-size: 24rpx;
+  color: #999;
+}

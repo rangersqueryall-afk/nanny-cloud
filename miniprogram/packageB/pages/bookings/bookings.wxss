@@ -3,6 +3,13 @@
   background: #f5f5f5;
 }
 
+.mode-banner {
+  margin: 0 24rpx;
+  padding: 16rpx 0 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
 .booking-list {
   height: 100vh;
 }
@@ -100,11 +107,13 @@
   margin-top: 18rpx;
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12rpx;
 }
 
-.btn-cancel {
+.btn-secondary {
   margin: 0;
-  width: 168rpx;
+  width: 176rpx;
   height: 58rpx;
   line-height: 58rpx;
   border-radius: 29rpx;
@@ -113,7 +122,22 @@
   font-size: 24rpx;
 }
 
-.btn-cancel::after {
+.btn-secondary::after {
+  border: none;
+}
+
+.btn-primary {
+  margin: 0;
+  width: 176rpx;
+  height: 58rpx;
+  line-height: 58rpx;
+  border-radius: 29rpx;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 24rpx;
+}
+
+.btn-primary::after {
   border: none;
 }
 

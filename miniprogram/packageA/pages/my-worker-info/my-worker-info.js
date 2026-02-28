@@ -94,18 +94,6 @@ Page({
     });
   },
 
-  onVerifiedChange(e) {
-    this.setData({
-      'form.isVerified': !!e.detail.value
-    });
-  },
-
-  onPublicChange(e) {
-    this.setData({
-      'form.isPublic': !!e.detail.value
-    });
-  },
-
   chooseAvatar() {
     wx.chooseImage({
       count: 1,
@@ -142,9 +130,7 @@ Page({
       skills: form.skills || [],
       priceMonthly: parseInt(form.priceMonthly, 10) || 0,
       priceDaily: parseInt(form.priceDaily, 10) || 0,
-      bio: form.bio || '',
-      isVerified: !!form.isVerified,
-      isPublic: !!form.isPublic
+      bio: form.bio || ''
     };
 
     app.showLoading('保存中...');

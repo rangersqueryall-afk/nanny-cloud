@@ -10,7 +10,7 @@
       "root": "packageA",
       "pages": [
         "pages/worker-detail/worker-detail",
-        "pages/my-worker-info/my-worker-info",
+        "pages/worker-settings/worker-settings",
         "pages/booking/booking",
         "pages/worker-register/worker-register"
       ]
@@ -22,6 +22,13 @@
         "pages/favorites/favorites",
         "pages/order-detail/order-detail",
         "pages/review/review"
+      ]
+    },
+    {
+      "root": "packageC",
+      "pages": [
+        "pages/interview-admin/interview-admin",
+        "pages/rules-training/rules-training"
       ]
     }
   ],

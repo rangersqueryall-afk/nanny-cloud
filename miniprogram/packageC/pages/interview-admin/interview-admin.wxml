@@ -1,0 +1,69 @@
+<view class="admin-page">
+  <view class="tab-nav">
+    <view
+      class="tab-item {{currentTab === index ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="value"
+      data-index="{{index}}"
+      bindtap="onTabChange"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <scroll-view
+    class="list-wrap"
+    scroll-y="{{true}}"
+    bindscrolltolower="onLoadMore"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="card-list" wx:if="{{list.length > 0}}">
+      <view class="card" wx:for="{{list}}" wx:key="_id">
+        <view class="head">
+          <text class="name">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
+          <text class="status">{{item.statusText}}</text>
+        </view>
+        <view class="row"><text class="label">提交时间：</text><text>{{item.createdAtText}}</text></view>
+        <view class="row" wx:if="{{item.serviceType}}"><text class="label">服务类型：</text><text>{{item.serviceType}}</text></view>
+        <view class="row" wx:if="{{item.startDate}}"><text class="label">开始日期：</text><text>{{item.startDate}}</text></view>
+        <view class="row" wx:if="{{item.interviewTime}}"><text class="label">面试时间：</text><text>{{item.interviewTime}}</text></view>
+        <view class="row" wx:if="{{item.platformNote}}"><text class="label">平台备注：</text><text>{{item.platformNote}}</text></view>
+
+        <view class="actions">
+          <button
+            class="btn-primary"
+            wx:if="{{item.canSchedule}}"
+            data-booking-id="{{item._id}}"
+            bindtap="onScheduleInterview"
+          >安排面试</button>
+
+          <button
+            class="btn-danger"
+            wx:if="{{item.canSetResult}}"
+            data-booking-id="{{item._id}}"
+            data-passed="{{false}}"
+            bindtap="onSetInterviewResult"
+          >不通过</button>
+          <button
+            class="btn-primary"
+            wx:if="{{item.canSetResult}}"
+            data-booking-id="{{item._id}}"
+            data-passed="{{true}}"
+            bindtap="onSetInterviewResult"
+          >通过</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="load-status">
+      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+      <text wx:if="{{!hasMore && list.length > 0}}" class="no-more">没有更多了</text>
+    </view>
+
+    <view class="empty" wx:if="{{!isLoading && list.length === 0}}">
+      <text>暂无记录</text>
+    </view>
+  </scroll-view>
+</view>

@@ -3,6 +3,7 @@
  * 展示用户的所有订单，支持Tab切换和分页加载
  */
 const app = getApp();
+const { ORDER_LIST_STATUS_TEXT, ORDER_PAGE_TABS, ORDER_STATUS } = require('../../utils/constants');
 
 Page({
   /**
@@ -10,12 +11,7 @@ Page({
    */
   data: {
     // Tab配置
-    tabs: [
-      { label: '全部', value: 'all', count: 0 },
-      { label: '待服务', value: 'pending', count: 0 },
-      { label: '服务中', value: 'serving', count: 0 },
-      { label: '已完成', value: 'completed', count: 0 }
-    ],
+    tabs: ORDER_PAGE_TABS.map((item) => ({ ...item, count: 0 })),
     currentTab: 0,
     
     // 订单列表
@@ -176,7 +172,19 @@ Page({
       status: status
     })
     .then((res) => {
-      const orders = res.data.list || [];
+      const orders = (res.data.list || []).map((item) => {
+        const normalizedStatus = item.status === ORDER_STATUS.IN_SERVICE ? ORDER_STATUS.SERVING : item.status;
+        return {
+          ...item,
+          id: item._id || item.id,
+          orderNo: item._id || item.id,
+          serviceDate: item.startDate || '',
+          serviceTime: item.endDate ? `至 ${item.endDate}` : '',
+          totalPrice: item.price || 0,
+          status: normalizedStatus,
+          statusText: ORDER_LIST_STATUS_TEXT[item.status] || ORDER_LIST_STATUS_TEXT[normalizedStatus] || '未知状态'
+        };
+      });
       const pagination = res.data.pagination || {};
       
       this.setData({
@@ -247,12 +255,13 @@ Page({
       content: '确定要取消这个订单吗？',
       success: (res) => {
         if (res.confirm) {
-          wx.showToast({
-            title: '已取消',
-            icon: 'success'
-          });
-          // 刷新列表
-          this.loadOrders(true);
+          app.callCloudFunction('order', 'cancel', { id: orderId })
+            .then(() => {
+              wx.showToast({ title: '已取消', icon: 'success' });
+              this.loadOrders(true);
+              this.loadOrderCounts();
+            })
+            .catch((err) => app.showToast(err.message || '取消失败'));
         }
       }
     });
@@ -292,12 +301,13 @@ Page({
       content: '确认服务已完成吗？',
       success: (res) => {
         if (res.confirm) {
-          wx.showToast({
-            title: '已确认完成',
-            icon: 'success'
-          });
-          // 刷新列表
-          this.loadOrders(true);
+          app.callCloudFunction('order', 'complete', { id: orderId })
+            .then(() => {
+              wx.showToast({ title: '已确认完成', icon: 'success' });
+              this.loadOrders(true);
+              this.loadOrderCounts();
+            })
+            .catch((err) => app.showToast(err.message || '操作失败'));
         }
       }
     });

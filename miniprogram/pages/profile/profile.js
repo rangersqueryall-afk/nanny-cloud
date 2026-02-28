@@ -3,6 +3,7 @@
  * 用户信息展示和功能入口
  */
 const app = getApp();
+const { USER_ROLE, PROFILE_ORDER_STATUS_TAB_INDEX } = require('../../utils/constants');
 
 Page({
   /**
@@ -12,6 +13,7 @@ Page({
     // 登录状态
     isLogin: false,
     isWorker: false,
+    isPlatform: false,
     workerInfo: null,
     
     // 用户信息
@@ -64,6 +66,8 @@ Page({
     
     this.setData({
       isLogin: app.globalData.isLogin,
+      isPlatform: userInfo && userInfo.role === USER_ROLE.PLATFORM,
+      isWorker: userInfo && userInfo.role === USER_ROLE.WORKER,
       userInfo: {
         avatarUrl: userInfo && userInfo.avatar ? userInfo.avatar : '',
         nickName: userInfo && userInfo.nickname ? userInfo.nickname : '',
@@ -87,7 +91,8 @@ Page({
       .then((res) => {
         const userData = res.data;
         this.setData({
-          isWorker: userData.role === 'worker',
+          isWorker: userData.role === USER_ROLE.WORKER,
+          isPlatform: userData.role === USER_ROLE.PLATFORM,
           workerInfo: userData.workerInfo,
           userInfo: {
             avatarUrl: userData.avatar,
@@ -176,7 +181,8 @@ Page({
             
             this.setData({
               isLogin: true,
-              isWorker: data.userInfo.role === 'worker',
+              isWorker: data.userInfo.role === USER_ROLE.WORKER,
+              isPlatform: data.userInfo.role === USER_ROLE.PLATFORM,
               workerInfo: data.workerInfo,
               userInfo: {
                 avatarUrl: data.userInfo.avatar,
@@ -322,13 +328,7 @@ Page({
     }
     
     // 映射状态到订单页面的tab索引
-    const statusMap = {
-      'all': 0,
-      'pending': 1,
-      'serving': 2,
-      'completed': 3
-    };
-    const tabIndex = statusMap[status] || 0;
+    const tabIndex = PROFILE_ORDER_STATUS_TAB_INDEX[status] || 0;
     
     wx.navigateTo({
       url: `/pages/orders/orders?tabIndex=${tabIndex}`
@@ -348,6 +348,10 @@ Page({
           app.showToast('请先登录');
           return;
         }
+        if (this.data.isWorker || this.data.isPlatform) {
+          app.showToast('仅雇主可使用收藏');
+          return;
+        }
         wx.navigateTo({
           url: '/packageB/pages/favorites/favorites'
         });
@@ -363,6 +367,37 @@ Page({
         break;
       case 'address':
         app.showToast('功能开发中');
+        break;
+      case 'workerSettings':
+        if (!this.data.isLogin || !this.data.isWorker) {
+          app.showToast('仅阿姨可访问');
+          return;
+        }
+        wx.navigateTo({
+          url: '/packageA/pages/worker-settings/worker-settings'
+        });
+        break;
+      case 'rulesTraining':
+        if (!this.data.isLogin || !this.data.isWorker) {
+          app.showToast('仅阿姨可访问');
+          return;
+        }
+        wx.navigateTo({
+          url: '/packageC/pages/rules-training/rules-training'
+        });
+        break;
+      case 'interviewAdmin':
+        if (!this.data.isLogin) {
+          app.showToast('请先登录');
+          return;
+        }
+        if (!this.data.isPlatform) {
+          app.showToast('仅平台管理员可访问');
+          return;
+        }
+        wx.navigateTo({
+          url: '/packageC/pages/interview-admin/interview-admin'
+        });
         break;
       case 'contact':
         this.handleContact();
@@ -383,9 +418,7 @@ Page({
    * 联系客服
    */
   handleContact() {
-    app.contactService({
-      content: '客服电话：400-888-8888\n服务时间：9:00-21:00'
-    });
+    app.contactService();
   },
 
   /**
@@ -396,49 +429,13 @@ Page({
       app.showToast('请先登录');
       return;
     }
+    if (this.data.isPlatform) {
+      app.showToast('平台管理员不可注册为阿姨');
+      return;
+    }
     
     wx.navigateTo({
       url: '/packageA/pages/worker-register/worker-register'
-    });
-  },
-
-  /**
-   * 查看我的阿姨信息
-   */
-  onMyWorkerInfo() {
-    if (!this.data.isLogin) {
-      app.showToast('请先登录');
-      return;
-    }
-
-    wx.navigateTo({
-      url: '/packageA/pages/my-worker-info/my-worker-info'
-    });
-  },
-
-  /**
-   * 切换阿姨信息开放/隐藏状态
-   */
-  onToggleWorkerStatus() {
-    if (!this.data.isLogin) {
-      app.showToast('请先登录');
-      return;
-    }
-    
-    const { workerInfo } = this.data;
-    const newStatus = !workerInfo.isPublic;
-    
-    app.callCloudFunction('user', 'updateWorkerStatus', {
-      isPublic: newStatus
-    })
-    .then((res) => {
-      this.setData({
-        'workerInfo.isPublic': newStatus
-      });
-      app.showToast(res.message);
-    })
-    .catch((err) => {
-      app.showToast(err.message || '操作失败');
     });
   },
 
@@ -458,6 +455,7 @@ Page({
           this.setData({
             isLogin: false,
             isWorker: false,
+            isPlatform: false,
             workerInfo: null,
             userInfo: {
               avatarUrl: '',

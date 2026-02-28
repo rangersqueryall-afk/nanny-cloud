@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "面试管理",
+  "usingComponents": {
+    "loading": "/components/loading/loading"
+  }
+}

@@ -1,0 +1,20 @@
+<view class="rules-page">
+  <view class="card">
+    <view class="title">平台规则</view>
+    <view class="rule-item" wx:for="{{rules}}" wx:key="index">
+      <text class="dot">•</text>
+      <text class="text">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title">推荐培训</view>
+    <view class="training-item" wx:for="{{trainings}}" wx:key="title">
+      <view class="head">
+        <text class="name">{{item.title}}</text>
+        <text class="duration">{{item.duration}}</text>
+      </view>
+      <text class="desc">{{item.desc}}</text>
+    </view>
+  </view>
+</view>

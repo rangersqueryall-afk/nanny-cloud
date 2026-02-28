@@ -5,6 +5,7 @@
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
+const _ = db.command;
 
 // 脱敏姓名
 function maskName(name) {
@@ -25,6 +26,8 @@ exports.main = async (event, context) => {
       return await getDetail(OPENID, data);
     } else if (action === 'create') {
       return await create(OPENID, data);
+    } else if (action === 'createFromBooking') {
+      return await createFromBooking(OPENID, data);
     } else if (action === 'cancel') {
       return await cancel(OPENID, data);
     } else if (action === 'complete') {
@@ -39,6 +42,26 @@ exports.main = async (event, context) => {
   }
 };
 
+async function findWorkerById(workerId) {
+  if (!workerId) return null;
+  try {
+    const byDoc = await db.collection('workers').doc(workerId).get();
+    if (byDoc && byDoc.data) return byDoc.data;
+  } catch (e) {}
+  try {
+    const byId = await db.collection('workers').where({ id: workerId }).limit(1).get();
+    if (byId.data && byId.data.length > 0) return byId.data[0];
+  } catch (e) {}
+  return null;
+}
+
+function toDateSafe(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
 async function getList(openid, data) {
   const status = data && data.status ? data.status : 'all';
   const page = data && data.page ? data.page : 1;
@@ -49,7 +72,11 @@ async function getList(openid, data) {
   // 状态筛选：pending 表示待服务（包含 pending 和 confirmed）
   if (status !== 'all') {
     if (status === 'pending') {
-      where.status = db.command.in(['pending', 'confirmed']);
+      where.status = _.in(['pending', 'confirmed']);
+    } else if (status === 'serving') {
+      where.status = _.in(['serving', 'in_service']);
+    } else if (status === 'in_service') {
+      where.status = _.in(['serving', 'in_service']);
     } else {
       where.status = status;
     }
@@ -70,15 +97,10 @@ async function getList(openid, data) {
     let workerName = '未知阿姨';
     let workerAvatar = '/images/default-avatar.png';
     
-    try {
-      const workerRes = await db.collection('workers').doc(order.workerId).get();
-      const worker = workerRes.data;
-      if (worker) {
-        workerName = maskName(worker.name);
-        workerAvatar = worker.avatar;
-      }
-    } catch (e) {
-      console.log('获取阿姨信息失败:', e);
+    const worker = await findWorkerById(order.workerId);
+    if (worker) {
+      workerName = maskName(worker.name);
+      workerAvatar = worker.avatar;
     }
     
     list.push({
@@ -121,8 +143,7 @@ async function getDetail(openid, data) {
   }
 
   const order = orderRes.data[0];
-  const workerRes = await db.collection('workers').doc(order.workerId).get();
-  const worker = workerRes.data;
+  const worker = await findWorkerById(order.workerId);
 
   return {
     success: true,
@@ -187,6 +208,88 @@ async function create(openid, data) {
   };
 }
 
+async function createFromBooking(openid, data) {
+  const bookingId = data && data.bookingId;
+  const contractSigned = !!(data && data.contractSigned);
+  if (!bookingId) return { success: false, message: '预约ID不能为空' };
+  if (!contractSigned) return { success: false, message: '请先签署合同' };
+
+  const bookingRes = await db.collection('bookings').where({ _id: bookingId }).limit(1).get();
+  if (!bookingRes.data || bookingRes.data.length === 0) {
+    return { success: false, message: '预约不存在' };
+  }
+
+  const booking = bookingRes.data[0];
+  const ownerMatched = booking.employerOpenid === openid || booking.userOpenid === openid;
+  if (!ownerMatched) {
+    return { success: false, message: '无权限操作该预约' };
+  }
+  if (booking.status !== 'interview_passed') {
+    return { success: false, message: '当前预约状态不可提交订单' };
+  }
+  if (booking.orderId) {
+    return { success: false, message: '该预约已提交订单' };
+  }
+
+  const startDate = String(booking.startDate || '');
+  const startAt = toDateSafe(startDate);
+  if (!startAt) {
+    return { success: false, message: '预约开始日期无效' };
+  }
+
+  const now = new Date();
+  const orderStatus = now >= startAt ? 'in_service' : 'pending';
+
+  const orderData = {
+    bookingId,
+    userOpenid: booking.employerOpenid || booking.userOpenid,
+    workerId: booking.workerId,
+    serviceType: booking.serviceType || '',
+    startDate: booking.startDate || '',
+    endDate: booking.endDate || '',
+    address: booking.address || '',
+    contactName: booking.contactName || '',
+    contactPhone: booking.contactPhone || '',
+    remark: booking.remark || '',
+    price: booking.totalPrice || 0,
+    status: orderStatus,
+    contractSigned: true,
+    contractSignedAt: db.serverDate(),
+    createdAt: db.serverDate(),
+    updatedAt: db.serverDate()
+  };
+
+  const orderAddRes = await db.collection('orders').add({ data: orderData });
+  const statusHistory = Array.isArray(booking.statusHistory) ? booking.statusHistory.slice() : [];
+  statusHistory.push({
+    from: booking.status,
+    to: 'order_created',
+    operator: openid,
+    operatorRole: 'employer',
+    remark: '雇主提交订单并签署合同',
+    time: new Date()
+  });
+
+  await db.collection('bookings').doc(bookingId).update({
+    data: {
+      status: 'order_created',
+      orderId: orderAddRes._id,
+      contractSigned: true,
+      statusHistory,
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return {
+    success: true,
+    data: {
+      orderId: orderAddRes._id,
+      orderStatus
+    },
+    message: '订单创建成功'
+  };
+}
+
 async function cancel(openid, data) {
   const id = data.id;
   const orderRes = await db.collection('orders')
@@ -223,7 +326,7 @@ async function complete(openid, data) {
   }
 
   const order = orderRes.data[0];
-  if (order.status !== 'in_service') {
+  if (order.status !== 'in_service' && order.status !== 'serving') {
     return { success: false, message: '当前订单状态不能确认完成' };
   }
 
@@ -247,7 +350,7 @@ async function getStats(openid, data) {
   const pendingCount = await db.collection('orders')
     .where({
       userOpenid: openid,
-      status: db.command.in(['pending', 'confirmed'])
+      status: _.in(['pending', 'confirmed'])
     })
     .count();
   
@@ -255,7 +358,7 @@ async function getStats(openid, data) {
   const servingCount = await db.collection('orders')
     .where({
       userOpenid: openid,
-      status: 'in_service'
+      status: _.in(['serving', 'in_service'])
     })
     .count();
   

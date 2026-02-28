@@ -2,6 +2,8 @@
  * 订单卡片组件
  * 用于展示订单信息
  */
+const { ORDER_STATUS } = require('../../utils/constants');
+
 Component({
   /**
    * 组件属性
@@ -51,24 +53,25 @@ Component({
       let buttons = [];
       
       switch (status) {
-        case 'pending': // 待确认
+        case ORDER_STATUS.PENDING: // 待确认
           buttons = [
             { text: '取消', action: 'cancel', type: 'default' },
             { text: '客服', action: 'contact', type: 'default' }
           ];
           break;
-        case 'confirmed': // 已确认
+        case ORDER_STATUS.CONFIRMED: // 已确认
           buttons = [
             { text: '取消', action: 'cancel', type: 'default' },
             { text: '联系', action: 'call', type: 'primary' }
           ];
           break;
-        case 'serving': // 服务中
+        case ORDER_STATUS.SERVING: // 服务中
+        case ORDER_STATUS.IN_SERVICE:
           buttons = [
             { text: '完成', action: 'complete', type: 'primary' }
           ];
           break;
-        case 'completed': // 已完成
+        case ORDER_STATUS.COMPLETED: // 已完成
           buttons = [
             { text: '再约', action: 'rebook', type: 'default' }
           ];
@@ -76,7 +79,7 @@ Component({
             buttons.unshift({ text: '评价', action: 'review', type: 'primary' });
           }
           break;
-        case 'cancelled': // 已取消
+        case ORDER_STATUS.CANCELLED: // 已取消
           buttons = [
             { text: '再约', action: 'rebook', type: 'primary' }
           ];
@@ -96,7 +99,7 @@ Component({
     onTap() {
       const { order } = this.properties;
       this.triggerEvent('tap', { 
-        orderId: order.id,
+        orderId: order.id || order._id,
         order: order 
       });
     },
@@ -110,7 +113,7 @@ Component({
       
       this.triggerEvent('action', { 
         action,
-        orderId: order.id,
+        orderId: order.id || order._id,
         order: order 
       });
     }

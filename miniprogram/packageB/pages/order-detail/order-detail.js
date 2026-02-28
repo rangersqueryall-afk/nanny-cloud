@@ -4,6 +4,7 @@
  */
 const app = getApp();
 const { formatDate } = require('../../../utils/util');
+const { ORDER_DETAIL_STATUS_TEXT, ORDER_STATUS } = require('../../../utils/constants');
 
 Page({
   /**
@@ -60,8 +61,8 @@ Page({
         const normalized = {
           id: order._id || id,
           orderNo: order._id || id,
-          status: order.status || 'pending',
-          statusText: '',
+          status: order.status || ORDER_STATUS.PENDING,
+          statusText: ORDER_DETAIL_STATUS_TEXT[order.status] || '待服务',
           workerId: order.workerId,
           workerName: order.workerName || '阿姨',
           workerAvatar: order.workerAvatar || '/images/default-avatar.png',
@@ -119,23 +120,24 @@ Page({
     let statusDesc = '';
     
     switch (order.status) {
-      case 'pending':
+      case ORDER_STATUS.PENDING:
         statusIcon = '⏳';
         statusDesc = '订单已提交，等待确认';
         break;
-      case 'confirmed':
+      case ORDER_STATUS.CONFIRMED:
         statusIcon = '✅';
         statusDesc = '订单已确认，等待服务开始';
         break;
-      case 'serving':
+      case ORDER_STATUS.SERVING:
+      case ORDER_STATUS.IN_SERVICE:
         statusIcon = '🔄';
         statusDesc = '服务进行中';
         break;
-      case 'completed':
+      case ORDER_STATUS.COMPLETED:
         statusIcon = '🎉';
         statusDesc = '服务已完成，感谢您的使用';
         break;
-      case 'cancelled':
+      case ORDER_STATUS.CANCELLED:
         statusIcon = '❌';
         statusDesc = '订单已取消';
         break;
@@ -160,19 +162,20 @@ Page({
     let completedSteps = 0;
     
     switch (order.status) {
-      case 'pending':
+      case ORDER_STATUS.PENDING:
         completedSteps = 1;
         break;
-      case 'confirmed':
+      case ORDER_STATUS.CONFIRMED:
         completedSteps = 2;
         break;
-      case 'serving':
+      case ORDER_STATUS.SERVING:
+      case ORDER_STATUS.IN_SERVICE:
         completedSteps = 3;
         break;
-      case 'completed':
+      case ORDER_STATUS.COMPLETED:
         completedSteps = 4;
         break;
-      case 'cancelled':
+      case ORDER_STATUS.CANCELLED:
         completedSteps = 0;
         break;
     }
@@ -195,24 +198,25 @@ Page({
     let buttons = [];
     
     switch (order.status) {
-      case 'pending':
+      case ORDER_STATUS.PENDING:
         buttons = [
           { text: '取消', action: 'cancel', type: 'default' },
           { text: '客服', action: 'contact', type: 'primary' }
         ];
         break;
-      case 'confirmed':
+      case ORDER_STATUS.CONFIRMED:
         buttons = [
           { text: '取消', action: 'cancel', type: 'default' },
           { text: '联系', action: 'call', type: 'primary' }
         ];
         break;
-      case 'serving':
+      case ORDER_STATUS.SERVING:
+      case ORDER_STATUS.IN_SERVICE:
         buttons = [
           { text: '完成', action: 'complete', type: 'primary' }
         ];
         break;
-      case 'completed':
+      case ORDER_STATUS.COMPLETED:
         buttons = [
           { text: '再约', action: 'rebook', type: 'default' }
         ];
@@ -220,7 +224,7 @@ Page({
           buttons.unshift({ text: '评价', action: 'review', type: 'primary' });
         }
         break;
-      case 'cancelled':
+      case ORDER_STATUS.CANCELLED:
         buttons = [
           { text: '再约', action: 'rebook', type: 'primary' }
         ];
@@ -268,14 +272,12 @@ Page({
       content: '确定要取消这个订单吗？',
       success: (res) => {
         if (res.confirm) {
-          wx.showToast({
-            title: '已取消',
-            icon: 'success'
-          });
-          // 刷新页面
-          setTimeout(() => {
-            this.loadOrderDetail(orderId);
-          }, 1500);
+          app.callCloudFunction('order', 'cancel', { id: orderId })
+            .then(() => {
+              wx.showToast({ title: '已取消', icon: 'success' });
+              setTimeout(() => this.loadOrderDetail(orderId), 400);
+            })
+            .catch((err) => app.showToast(err.message || '取消失败'));
         }
       }
     });
@@ -315,14 +317,12 @@ Page({
       content: '确认服务已完成吗？',
       success: (res) => {
         if (res.confirm) {
-          wx.showToast({
-            title: '已确认完成',
-            icon: 'success'
-          });
-          // 刷新页面
-          setTimeout(() => {
-            this.loadOrderDetail(orderId);
-          }, 1500);
+          app.callCloudFunction('order', 'complete', { id: orderId })
+            .then(() => {
+              wx.showToast({ title: '已确认完成', icon: 'success' });
+              setTimeout(() => this.loadOrderDetail(orderId), 400);
+            })
+            .catch((err) => app.showToast(err.message || '操作失败'));
         }
       }
     });

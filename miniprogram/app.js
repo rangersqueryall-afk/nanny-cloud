@@ -210,7 +210,7 @@ App({
   contactService(options = {}) {
     const phoneNumber = options.phoneNumber || '13581711930';
     const title = options.title || '联系客服';
-    const content = options.content || `客服电话：${phoneNumber}\n工作时间：9:00-18:00\n如有任何问题，请随时联系我们！`;
+    const content = options.content || `客服电话：${phoneNumber}\n\n工作时间：9:00-18:00\n\n如有任何问题，请随时联系我们！`;
     const confirmText = options.confirmText || '拨打';
 
     wx.showModal({

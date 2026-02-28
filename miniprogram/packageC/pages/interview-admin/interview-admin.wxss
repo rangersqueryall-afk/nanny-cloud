@@ -1,0 +1,119 @@
+.admin-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.tab-nav {
+  display: flex;
+  background: #fff;
+  padding: 16rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.tab-item {
+  margin-right: 20rpx;
+  padding: 10rpx 20rpx;
+  font-size: 26rpx;
+  color: #666;
+  border-radius: 24rpx;
+  background: #f3f3f3;
+}
+
+.tab-item.active {
+  color: #fff;
+  background: #ff6b6b;
+}
+
+.list-wrap {
+  height: calc(100vh - 92rpx);
+}
+
+.card-list {
+  padding: 20rpx 24rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.status {
+  font-size: 22rpx;
+  color: #ff6b6b;
+  background: #fff1f1;
+  padding: 4rpx 12rpx;
+  border-radius: 18rpx;
+}
+
+.row {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #444;
+}
+
+.label {
+  color: #999;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18rpx;
+  gap: 12rpx;
+}
+
+.btn-primary,
+.btn-danger {
+  margin: 0;
+  width: 168rpx;
+  height: 58rpx;
+  line-height: 58rpx;
+  border-radius: 29rpx;
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.btn-primary {
+  background: #ff6b6b;
+}
+
+.btn-danger {
+  background: #999;
+}
+
+.btn-primary::after,
+.btn-danger::after {
+  border: none;
+}
+
+.load-status {
+  text-align: center;
+  padding: 20rpx;
+}
+
+.no-more {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.empty {
+  text-align: center;
+  padding: 200rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}

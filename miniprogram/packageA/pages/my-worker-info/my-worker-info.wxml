@@ -68,16 +68,6 @@
       <textarea class="textarea" value="{{form.bio}}" data-field="bio" bindinput="onInput" maxlength="300" />
     </view>
 
-    <view class="form-item switch-row">
-      <text class="label">是否认证(isVerified)</text>
-      <switch checked="{{form.isVerified}}" bindchange="onVerifiedChange" color="#FF6B6B" />
-    </view>
-
-    <view class="form-item switch-row">
-      <text class="label">是否公开(isPublic)</text>
-      <switch checked="{{form.isPublic}}" bindchange="onPublicChange" color="#FF6B6B" />
-    </view>
-
     <button class="btn-submit" bindtap="onSubmit">保存</button>
   </view>
 </view>

@@ -3,12 +3,7 @@
  * 展示阿姨的详细信息、工作经历、用户评价
  */
 const app = getApp();
-const SERVICE_TYPE_MAP = {
-  babysitter: '保姆',
-  nanny: '育儿嫂',
-  maternity: '月嫂',
-  elderly: '护老'
-};
+const { SERVICE_TYPE_TEXT, USER_ROLE } = require('../../../utils/constants');
 
 Page({
   /**
@@ -103,7 +98,7 @@ Page({
       reviewCount: worker.reviewCount || 0,
       skills: worker.skills || [],
       serviceTypes,
-      serviceTypesText: worker.serviceTypesText || serviceTypes.map(type => SERVICE_TYPE_MAP[type] || type),
+      serviceTypesText: worker.serviceTypesText || serviceTypes.map(type => SERVICE_TYPE_TEXT[type] || type),
       avatar: worker.avatar || '/images/default-avatar.png',
       isVerified: worker.isVerified !== false,
       introduction: worker.introduction || worker.bio || '暂无简介',
@@ -182,6 +177,15 @@ Page({
     // 检查登录状态
     if (!app.globalData.isLogin) {
       this.showLoginModal('收藏阿姨');
+      return;
+    }
+
+    const userRole = app.globalData.userInfo && app.globalData.userInfo.role ? app.globalData.userInfo.role : USER_ROLE.USER;
+    if (userRole === USER_ROLE.WORKER || userRole === USER_ROLE.PLATFORM) {
+      wx.showToast({
+        title: '仅雇主可收藏',
+        icon: 'none'
+      });
       return;
     }
     
