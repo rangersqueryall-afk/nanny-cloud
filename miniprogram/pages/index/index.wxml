@@ -1,6 +1,14 @@
 <!-- 首页 -->
 <view class="index-page">
-  <block wx:if="{{!isWorkerHome && !isPlatformHome}}">
+  <block wx:if="{{roleLoading}}">
+    <view class="home-loading">
+      <view class="home-loading-spinner"></view>
+      <text class="home-loading-text">加载首页中...</text>
+    </view>
+  </block>
+
+  <block wx:else>
+    <block wx:if="{{!isWorkerHome && !isPlatformHome}}">
     <!-- 顶部搜索栏 -->
     <view class="search-header">
       <view class="search-box" bindtap="onSearchTap">
@@ -69,12 +77,12 @@
         />
       </view>
     </view>
-  </block>
+    </block>
 
-  <block wx:elif="{{isWorkerHome}}">
-    <view class="worker-home">
+    <block wx:elif="{{isWorkerHome}}">
+      <view class="worker-home">
       <view class="worker-hero card">
-        <view class="worker-hero-title">阿姨工作台</view>
+        <view class="worker-hero-title">我的工作台</view>
         <view class="worker-hero-row">
           <view>
             <text class="hero-label">接单状态</text>
@@ -168,11 +176,11 @@
           <button class="mini-btn contact" bindtap="onGoRulesTraining">平台规则/培训</button>
         </view>
       </view>
-    </view>
-  </block>
+      </view>
+    </block>
 
-  <block wx:elif="{{isPlatformHome}}">
-    <view class="platform-home">
+    <block wx:elif="{{isPlatformHome}}">
+      <view class="platform-home">
       <view class="platform-hero card">
         <view class="worker-hero-title">平台工作台</view>
         <view class="platform-hero-row">
@@ -254,8 +262,9 @@
         </view>
         <view wx:else class="empty-tip">暂无已处理记录</view>
       </view>
-    </view>
-  </block>
+      </view>
+    </block>
 
-  <view class="bottom-placeholder"></view>
+    <view class="bottom-placeholder"></view>
+  </block>
 </view>

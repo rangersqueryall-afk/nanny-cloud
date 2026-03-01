@@ -158,3 +158,8 @@
 .btn-book:active {
   opacity: 0.9;
 }
+
+.btn-book.disabled {
+  background: #d9d9d9;
+  color: #fff;
+}

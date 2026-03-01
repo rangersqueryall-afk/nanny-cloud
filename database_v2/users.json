@@ -1,0 +1,61 @@
+{
+  "collection": "users",
+  "description": "用户数据（包含雇主/阿姨/平台角色）",
+  "data": [
+    {
+      "_id": "u101",
+      "openid": "openid_employer_001",
+      "nickname": "王雇主",
+      "avatar": "/images/default-avatar.png",
+      "phone": "13800000001",
+      "role": "user",
+      "workerId": null,
+      "createdAt": "2026-02-01T09:00:00.000Z",
+      "updatedAt": "2026-02-20T10:00:00.000Z"
+    },
+    {
+      "_id": "u102",
+      "openid": "openid_worker_001",
+      "nickname": "李阿姨",
+      "avatar": "/images/default-avatar.png",
+      "phone": "13800000002",
+      "role": "worker",
+      "workerId": "w101",
+      "createdAt": "2026-02-01T09:10:00.000Z",
+      "updatedAt": "2026-02-20T10:10:00.000Z"
+    },
+    {
+      "_id": "u103",
+      "openid": "openid_platform_001",
+      "nickname": "平台管理员",
+      "avatar": "/images/default-avatar.png",
+      "phone": "13800000003",
+      "role": "platform",
+      "workerId": null,
+      "createdAt": "2026-02-01T09:20:00.000Z",
+      "updatedAt": "2026-02-20T10:20:00.000Z"
+    },
+    {
+      "_id": "u104",
+      "openid": "openid_worker_002",
+      "nickname": "张阿姨",
+      "avatar": "/images/default-avatar.png",
+      "phone": "13800000004",
+      "role": "worker",
+      "workerId": "w102",
+      "createdAt": "2026-02-01T09:30:00.000Z",
+      "updatedAt": "2026-02-20T10:30:00.000Z"
+    },
+    {
+      "_id": "u105",
+      "openid": "openid_employer_002",
+      "nickname": "赵雇主",
+      "avatar": "/images/default-avatar.png",
+      "phone": "13800000005",
+      "role": "user",
+      "workerId": null,
+      "createdAt": "2026-02-01T09:40:00.000Z",
+      "updatedAt": "2026-02-20T10:40:00.000Z"
+    }
+  ]
+}

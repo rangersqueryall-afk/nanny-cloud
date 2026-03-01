@@ -1,0 +1,111 @@
+{
+  "collection": "workers",
+  "description": "阿姨数据（对齐当前角色、搜索、接单设置逻辑）",
+  "data": [
+    {
+      "_id": "w101",
+      "name": "李秀芳",
+      "avatar": "/images/worker-1.jpg",
+      "age": 43,
+      "hometown": "安徽合肥",
+      "experience": 9,
+      "serviceTypes": ["nanny", "hourly"],
+      "price": {
+        "daily": 280,
+        "monthly": 7800
+      },
+      "skills": ["婴幼儿护理", "辅食制作", "早教启蒙", "家庭保洁"],
+      "phone": "13812340001",
+      "bio": "9年家政经验，擅长育儿和钟点服务。",
+      "rating": 4.9,
+      "reviewCount": 126,
+      "orderCount": 158,
+      "isVerified": true,
+      "isPublic": true,
+      "status": "available",
+      "userOpenid": "openid_worker_001",
+      "acceptPreferences": {
+        "serviceTypes": ["nanny", "hourly"],
+        "shiftType": "daytime",
+        "weekDays": "mon_sat",
+        "isLiveIn": false,
+        "hourlyStart": "09:00",
+        "hourlyEnd": "18:00",
+        "workTime": "",
+        "note": "可接紧急单"
+      },
+      "createdAt": "2026-02-01T10:00:00.000Z",
+      "updatedAt": "2026-02-25T11:00:00.000Z"
+    },
+    {
+      "_id": "w102",
+      "name": "张桂英",
+      "avatar": "/images/worker-2.jpg",
+      "age": 50,
+      "hometown": "江苏南京",
+      "experience": 12,
+      "serviceTypes": ["maternity", "babysitter"],
+      "price": {
+        "daily": 360,
+        "monthly": 10800
+      },
+      "skills": ["月子护理", "新生儿护理", "营养餐"],
+      "phone": "13812340002",
+      "bio": "专业月嫂，护理经验丰富。",
+      "rating": 4.8,
+      "reviewCount": 88,
+      "orderCount": 111,
+      "isVerified": true,
+      "isPublic": false,
+      "status": "offline",
+      "userOpenid": "openid_worker_002",
+      "acceptPreferences": {
+        "serviceTypes": ["maternity"],
+        "shiftType": "all_day",
+        "weekDays": "all_week",
+        "isLiveIn": true,
+        "hourlyStart": "09:00",
+        "hourlyEnd": "18:00",
+        "workTime": "",
+        "note": "仅接住家单"
+      },
+      "createdAt": "2026-02-01T10:10:00.000Z",
+      "updatedAt": "2026-02-25T11:10:00.000Z"
+    },
+    {
+      "_id": "w103",
+      "name": "周美华",
+      "avatar": "/images/worker-3.jpg",
+      "age": 39,
+      "hometown": "浙江杭州",
+      "experience": 6,
+      "serviceTypes": ["babysitter", "elderly"],
+      "price": {
+        "daily": 240,
+        "monthly": 6800
+      },
+      "skills": ["家庭保洁", "烹饪", "老人陪护"],
+      "phone": "13812340003",
+      "bio": "做事细致，擅长家务与老人陪护。",
+      "rating": 4.7,
+      "reviewCount": 52,
+      "orderCount": 73,
+      "isVerified": true,
+      "isPublic": true,
+      "status": "available",
+      "userOpenid": "",
+      "acceptPreferences": {
+        "serviceTypes": ["babysitter", "elderly"],
+        "shiftType": "daytime",
+        "weekDays": "mon_fri",
+        "isLiveIn": false,
+        "hourlyStart": "09:00",
+        "hourlyEnd": "18:00",
+        "workTime": "",
+        "note": ""
+      },
+      "createdAt": "2026-02-01T10:20:00.000Z",
+      "updatedAt": "2026-02-25T11:20:00.000Z"
+    }
+  ]
+}

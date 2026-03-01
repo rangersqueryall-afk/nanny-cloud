@@ -1,15 +1,17 @@
 /**
  * 首页
- * 爱心家政 - 保姆/育儿嫂中介小程序（云开发版）
+ * 阿姨快约 - 保姆/育儿嫂中介小程序（云开发版）
  */
 const app = getApp();
 const { USER_ROLE, BOOKING_STATUS, BOOKING_STATUS_TEXT } = require('../../utils/constants');
+const { getRoleFlagsByRole } = require('../../utils/role');
 
 Page({
   /**
    * 页面初始数据
    */
   data: {
+    roleLoading: true,
     isWorkerHome: false,
     isPlatformHome: false,
     workerInfo: null,
@@ -139,31 +141,40 @@ Page({
   },
 
   initHomeData(callback) {
+    this.setData({ roleLoading: true });
+
+    const done = () => {
+      this.setData({ roleLoading: false });
+      if (callback) callback();
+    };
+
     if (!app.globalData.isLogin) {
       this.setData({ isWorkerHome: false, isPlatformHome: false });
-      this.loadRecommendWorkers(callback);
+      this.loadRecommendWorkers(done);
       return;
     }
 
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
         const role = res && res.data && res.data.role ? res.data.role : USER_ROLE.USER;
-        if (role === USER_ROLE.WORKER) {
+        const roleFlags = getRoleFlagsByRole(role);
+        if (roleFlags.isWorker) {
           this.setData({
             isWorkerHome: true,
             isPlatformHome: false,
             workerInfo: res.data.workerInfo || null
           });
-          this.loadWorkerHomeData(callback);
+          this.loadWorkerHomeData(done);
           return;
         }
-        if (role === USER_ROLE.PLATFORM) {
+        if (roleFlags.isPlatform) {
           this.setData({
             isWorkerHome: false,
             isPlatformHome: true,
             workerInfo: null
           });
-          this.loadPlatformHomeData(callback);
+          this.promptPlatformSubscribeOncePerDay();
+          this.loadPlatformHomeData(done);
           return;
         }
 
@@ -172,13 +183,24 @@ Page({
           isPlatformHome: false,
           workerInfo: null
         });
-        this.loadRecommendWorkers(callback);
+        this.loadRecommendWorkers(done);
       })
       .catch((err) => {
         console.error('初始化首页失败:', err);
         this.setData({ isWorkerHome: false, isPlatformHome: false });
-        this.loadRecommendWorkers(callback);
+        this.loadRecommendWorkers(done);
       });
+  },
+
+  promptPlatformSubscribeOncePerDay() {
+    if (!app.globalData.isLogin) return;
+    const key = 'platform_subscribe_prompt_date';
+    const today = this.formatDateText(new Date());
+    const promptedDate = wx.getStorageSync(key);
+    if (promptedDate === today) return;
+
+    wx.setStorageSync(key, today);
+    app.requestSubscribeNotifications({ showToast: false }).catch(() => null);
   },
 
   /**
@@ -186,13 +208,12 @@ Page({
    */
   loadRecommendWorkers(callback) {
     this.setData({ loading: true });
-    
-    // 调用云函数获取推荐阿姨
-    app.callCloudFunction('home', 'getRecommendations', { limit: 8 })
+
+    app.callCloudFunction('worker', 'getList', { page: 1, limit: 8 })
       .then((res) => {
-        console.log('推荐阿姨数据:', res.data);
+        const list = res && res.data && Array.isArray(res.data.list) ? res.data.list : [];
         this.setData({
-          recommendWorkers: res.data || [],
+          recommendWorkers: list,
           loading: false
         });
         if (callback) callback();
@@ -537,7 +558,11 @@ Page({
       return;
     }
     
-    const { workerId } = e.detail;
+    const { workerId, worker } = e.detail;
+    if (worker && worker.isBooked) {
+      app.showToast('您已预约该阿姨');
+      return;
+    }
     wx.navigateTo({
       url: `/packageA/pages/booking/booking?workerId=${workerId}`
     });
@@ -615,7 +640,7 @@ Page({
   onViewMoreTap() {
     wx.navigateTo({
       url: '/pages/workers/workers'
-    });
+    });阿姨快约
   },
 
   /**
@@ -627,7 +652,7 @@ Page({
       desc: '提供优质保姆、育儿嫂、月嫂服务，让您的生活更轻松！',
       path: '/pages/index/index',
       imageUrl: '/images/share.png'
-    };
+    };阿姨快约
   },
 
   /**

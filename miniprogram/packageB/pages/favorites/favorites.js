@@ -1,5 +1,5 @@
 const app = getApp();
-const { USER_ROLE } = require('../../../utils/constants');
+const { getRoleFlagsByRole } = require('../../../utils/role');
 
 Page({
   data: {
@@ -18,8 +18,9 @@ Page({
   ensureEmployerAccess() {
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
-        const role = res && res.data && res.data.role ? res.data.role : USER_ROLE.USER;
-        if (role === USER_ROLE.WORKER || role === USER_ROLE.PLATFORM) {
+        const role = res && res.data && res.data.role ? res.data.role : '';
+        const roleFlags = getRoleFlagsByRole(role);
+        if (!roleFlags.isEmployer) {
           app.showToast('仅雇主可使用收藏');
           setTimeout(() => {
             wx.navigateBack();

@@ -25,7 +25,7 @@ Page({
     // 服务时间
     startDate: '',
     minDate: '',
-    durationOptions: ['1个月', '3个月', '6个月', '12个月'],
+    durationOptions: ['1个月', '3个月', '6个月', '12个月', '24个月'],
     durationIndex: -1,
     dailyHoursOptions: ['2小时', '4小时', '6小时', '8小时'],
     dailyHoursIndex: -1,
@@ -94,7 +94,8 @@ Page({
             age: worker.age || 0,
             experience: worker.experience || 0,
             price: monthly,
-            avatar: worker.avatar || '/images/default-avatar.png'
+            avatar: worker.avatar || '/images/default-avatar.png',
+            serviceTypes: Array.isArray(worker.serviceTypes) ? worker.serviceTypes : []
           }
         }, () => {
           this.calculatePrice();
@@ -341,9 +342,15 @@ Page({
     this.setData({ isSubmitting: true });
     
     // 构建订单数据
+    const workerServiceTypes = this.data.worker && Array.isArray(this.data.worker.serviceTypes)
+      ? this.data.worker.serviceTypes
+      : [];
+    const workerPrimaryType = workerServiceTypes.length > 0 ? workerServiceTypes[0] : '';
+
     const orderData = {
       workerId: this.data.workerId,
-      serviceType: this.data.selectedServiceType,
+      serviceType: workerPrimaryType,
+      serviceMode: this.data.selectedServiceType,
       startDate: this.data.startDate,
       duration: this.data.durationOptions[this.data.durationIndex],
       dailyHours: this.data.dailyHoursIndex >= 0 ? this.data.dailyHoursOptions[this.data.dailyHoursIndex] : null,
@@ -359,15 +366,50 @@ Page({
     app.callCloudFunction('worker', 'bookWorker', orderData)
       .then(() => {
         this.setData({ isSubmitting: false });
-        wx.showToast({
-          title: '预约成功',
-          icon: 'success'
-        });
-        setTimeout(() => {
-          wx.navigateTo({
-            url: '/packageB/pages/bookings/bookings'
+        let hasRedirected = false;
+        const goToBookings = () => {
+          if (hasRedirected) return;
+          hasRedirected = true;
+          wx.redirectTo({
+            url: '/packageB/pages/bookings/bookings',
+            fail: (err) => {
+              console.error('跳转我的预约失败，尝试 navigateTo:', err);
+              wx.navigateTo({
+                url: '/packageB/pages/bookings/bookings',
+                fail: (navErr) => {
+                  console.error('navigateTo 我的预约也失败:', navErr);
+                  wx.showToast({
+                    title: '跳转失败，请手动进入我的预约',
+                    icon: 'none'
+                  });
+                }
+              });
+            }
           });
-        }, 1200);
+        };
+
+        wx.showModal({
+          title: '预约成功',
+          content: '是否开启消息通知，及时接收预约和面试进展？',
+          confirmText: '开启并查看',
+          cancelText: '稍后再说',
+          success: (res) => {
+            if (!res.confirm) {
+              goToBookings();
+              return;
+            }
+
+            Promise.race([
+              app.requestSubscribeNotifications({ showToast: false }).catch(() => null),
+              new Promise((resolve) => setTimeout(resolve, 2000))
+            ]).finally(() => {
+              goToBookings();
+            });
+          },
+          fail: () => {
+            goToBookings();
+          }
+        });
       })
       .catch((err) => {
         this.setData({ isSubmitting: false });

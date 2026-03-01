@@ -14,6 +14,7 @@ Page({
   },
 
   onLoad() {
+    app.requestSubscribeNotifications({ showToast: false }).catch(() => null);
     this.loadList(true);
   },
 

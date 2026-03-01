@@ -1,5 +1,6 @@
 <view class="bookings-page">
   <view class="mode-banner">{{mode === 'worker' ? '我的预约（阿姨端）' : '我的预约（雇主端）'}}</view>
+  <segmented-tabs tabs="{{filterTabs}}" value="{{activeFilter}}" bind:change="onTabChange" />
   <scroll-view
     class="booking-list"
     scroll-y="{{true}}"

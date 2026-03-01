@@ -44,6 +44,6 @@
   
   <!-- 右侧预约按钮 -->
   <view class="action-section">
-    <view class="btn-book" catchtap="onBookTap">预约</view>
+    <view class="btn-book {{worker.isBooked ? 'disabled' : ''}}" catchtap="onBookTap">{{worker.isBooked ? '已预约' : '预约'}}</view>
   </view>
 </view>

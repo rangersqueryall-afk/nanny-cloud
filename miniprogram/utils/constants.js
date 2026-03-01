@@ -8,7 +8,7 @@ const SERVICE_TYPE_TEXT = {
   livein: '住家服务',
   daytime: '白班服务',
   temporary: '临时服务',
-  babysitter: '保姆',
+  babysitter: ' f',
   nanny: '育儿嫂',
   maternity: '月嫂',
   elderly: '护老',
@@ -92,6 +92,25 @@ const INTERVIEW_ADMIN_TABS = [
   { label: '已完成', value: 'done' }
 ];
 
+const BOOKING_PAGE_FILTER_TABS = {
+  employer: [
+    { label: '待处理', value: 'pending' },
+    { label: '进行中', value: 'processing' },
+    { label: '已结束', value: 'closed' },
+    { label: '全部', value: 'all' }
+  ],
+  worker: [
+    { label: '待处理', value: 'pending' },
+    { label: '进行中', value: 'processing' },
+    { label: '已结束', value: 'closed' },
+    { label: '全部', value: 'all' }
+  ]
+};
+
+// 订阅消息模板ID（请替换为你小程序后台已配置的模板ID）
+// 例如：['xxxxxx_template_id']
+const SUBSCRIBE_TEMPLATE_IDS = ['3kEwF7K4ESVuK7MuQu-lyfPagnCmdtUrJhnn27UaR6w'];
+
 module.exports = {
   USER_ROLE,
   SERVICE_TYPE_TEXT,
@@ -102,5 +121,7 @@ module.exports = {
   PROFILE_ORDER_STATUS_TAB_INDEX,
   BOOKING_STATUS,
   BOOKING_STATUS_TEXT,
-  INTERVIEW_ADMIN_TABS
+  INTERVIEW_ADMIN_TABS,
+  BOOKING_PAGE_FILTER_TABS,
+  SUBSCRIBE_TEMPLATE_IDS
 };

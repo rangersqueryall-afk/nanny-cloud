@@ -1,0 +1,13 @@
+<view class="segmented-tabs">
+  <view
+    wx:for="{{tabs}}"
+    wx:key="value"
+    class="segmented-tab {{value === item.value ? 'active' : ''}}"
+    data-index="{{index}}"
+    bindtap="onTabTap"
+  >
+    <text class="tab-text">{{item.label}}</text>
+    <text class="tab-badge" wx:if="{{item.count > 0}}">{{item.count}}</text>
+  </view>
+</view>
+

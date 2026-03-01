@@ -46,7 +46,7 @@ async function getRecommendations(data) {
     .limit(limit)
     .get();
 
-    console.log('获取推荐阿姨数据:', workerRes.data);
+ console.log('获取推荐阿姨数据:', workerRes.data);
   return { success: true, data: workerRes.data, message: '获取成功' };
 }
 

@@ -68,6 +68,7 @@ Component({
      */
     onBookTap() {
       const { worker } = this.properties;
+      if (worker && worker.isBooked) return;
       // 触发预约事件
       this.triggerEvent('book', { 
         workerId: worker.id || worker._id,

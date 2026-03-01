@@ -5,6 +5,38 @@
   padding-bottom: 40rpx;
 }
 
+.home-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18rpx;
+}
+
+.home-loading-spinner {
+  width: 56rpx;
+  height: 56rpx;
+  border: 6rpx solid #ffd3d3;
+  border-top-color: #ff6b6b;
+  border-radius: 50%;
+  animation: home-spin 0.9s linear infinite;
+}
+
+.home-loading-text {
+  font-size: 26rpx;
+  color: #888;
+}
+
+@keyframes home-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* 搜索栏 */
 .search-header {
   background: linear-gradient(135deg, #FF6B6B, #E55A5A);

@@ -3,7 +3,8 @@
  * 用户信息展示和功能入口
  */
 const app = getApp();
-const { USER_ROLE, PROFILE_ORDER_STATUS_TAB_INDEX } = require('../../utils/constants');
+const { PROFILE_ORDER_STATUS_TAB_INDEX } = require('../../utils/constants');
+const { getRoleFlagsByRole, getRoleFlagsByUser } = require('../../utils/role');
 
 Page({
   /**
@@ -63,11 +64,12 @@ Page({
    */
   checkLoginStatus() {
     const userInfo = app.globalData.userInfo;
+    const roleFlags = getRoleFlagsByUser(userInfo);
     
     this.setData({
       isLogin: app.globalData.isLogin,
-      isPlatform: userInfo && userInfo.role === USER_ROLE.PLATFORM,
-      isWorker: userInfo && userInfo.role === USER_ROLE.WORKER,
+      isPlatform: roleFlags.isPlatform,
+      isWorker: roleFlags.isWorker,
       userInfo: {
         avatarUrl: userInfo && userInfo.avatar ? userInfo.avatar : '',
         nickName: userInfo && userInfo.nickname ? userInfo.nickname : '',
@@ -90,9 +92,10 @@ Page({
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
         const userData = res.data;
+        const roleFlags = getRoleFlagsByRole(userData.role);
         this.setData({
-          isWorker: userData.role === USER_ROLE.WORKER,
-          isPlatform: userData.role === USER_ROLE.PLATFORM,
+          isWorker: roleFlags.isWorker,
+          isPlatform: roleFlags.isPlatform,
           workerInfo: userData.workerInfo,
           userInfo: {
             avatarUrl: userData.avatar,
@@ -174,6 +177,7 @@ Page({
             wx.hideLoading();
             
             const data = loginRes.data;
+            const roleFlags = getRoleFlagsByRole(data.userInfo.role);
             
             app.globalData.userInfo = data.userInfo;
             app.globalData.isLogin = true;
@@ -181,8 +185,8 @@ Page({
             
             this.setData({
               isLogin: true,
-              isWorker: data.userInfo.role === USER_ROLE.WORKER,
-              isPlatform: data.userInfo.role === USER_ROLE.PLATFORM,
+              isWorker: roleFlags.isWorker,
+              isPlatform: roleFlags.isPlatform,
               workerInfo: data.workerInfo,
               userInfo: {
                 avatarUrl: data.userInfo.avatar,
@@ -270,8 +274,10 @@ Page({
    * 修改昵称
    */
   onNicknameChange(e) {
-    const nickName = e.detail.value;
-    if (!nickName || !nickName.trim()) return;
+    const detail = e && e.detail ? e.detail : {};
+    const nickName = ((detail.value || detail.nickname || '') + '').trim();
+    if (!nickName) return;
+    if (nickName === (this.data.userInfo.nickName || '').trim()) return;
     
     app.callCloudFunction('user', 'updateProfile', {
       nickname: nickName
@@ -298,11 +304,58 @@ Page({
   },
 
   onNameInputBlur() {
+    this.onNicknameChange.apply(this, arguments);
     if (this.data.nameInputFocus) {
       this.setData({
         nameInputFocus: false
       });
     }
+  },
+
+  onBindPhone(e) {
+    if (!this.data.isLogin) {
+      app.showToast('请先登录');
+      return;
+    }
+
+    const detail = e && e.detail ? e.detail : {};
+    if (detail.errMsg !== 'getPhoneNumber:ok' || !detail.code) {
+      wx.showModal({
+        title: '需要手机号授权',
+        content: '未授权手机号将无法完成绑定。请点击“绑定”并允许微信手机号授权。',
+        confirmText: '重新授权',
+        cancelText: '稍后再说',
+        success: (res) => {
+          if (res.confirm) {
+            app.showToast('请再次点击“绑定”完成授权');
+          }
+        }
+      });
+      return;
+    }
+
+    app.callCloudFunction('user', 'bindPhone', { code: detail.code })
+      .then((res) => {
+        const phone = res && res.data && res.data.phone ? res.data.phone : '';
+        if (!phone) {
+          app.showToast('绑定失败');
+          return;
+        }
+
+        this.setData({
+          'userInfo.phone': phone
+        });
+
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo.phone = phone;
+          wx.setStorageSync('userInfo', app.globalData.userInfo);
+        }
+
+        app.showToast('手机号已绑定', 'success');
+      })
+      .catch((err) => {
+        app.showToast(err.message || '绑定失败');
+      });
   },
 
   /**
@@ -402,6 +455,9 @@ Page({
       case 'contact':
         this.handleContact();
         break;
+      case 'subscribeNotify':
+        this.onSubscribeNotify();
+        break;
       case 'feedback':
         app.showToast('功能开发中');
         break;
@@ -419,6 +475,10 @@ Page({
    */
   handleContact() {
     app.contactService();
+  },
+
+  onSubscribeNotify() {
+    app.requestSubscribeNotifications({ showToast: true });
   },
 
   /**

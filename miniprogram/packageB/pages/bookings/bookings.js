@@ -1,10 +1,13 @@
 const app = getApp();
-const { BOOKING_STATUS, BOOKING_STATUS_TEXT, SERVICE_TYPE_TEXT, USER_ROLE } = require('../../../utils/constants');
+const { BOOKING_STATUS, BOOKING_STATUS_TEXT, SERVICE_TYPE_TEXT, BOOKING_PAGE_FILTER_TABS } = require('../../../utils/constants');
+const { getRoleFlagsByRole } = require('../../../utils/role');
 
 Page({
   data: {
     mode: 'employer',
     isWorker: false,
+    filterTabs: BOOKING_PAGE_FILTER_TABS.employer,
+    activeFilter: 'pending',
     bookings: [],
     page: 1,
     pageSize: 10,
@@ -27,16 +30,33 @@ Page({
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
         const profile = res.data || {};
-        const isWorker = profile.role === USER_ROLE.WORKER;
+        const isWorker = getRoleFlagsByRole(profile.role).isWorker;
+        const mode = isWorker ? 'worker' : 'employer';
         this.setData({
           isWorker,
-          mode: isWorker ? 'worker' : 'employer'
+          mode,
+          filterTabs: BOOKING_PAGE_FILTER_TABS[mode] || BOOKING_PAGE_FILTER_TABS.employer,
+          activeFilter: 'pending'
         }, () => this.loadBookings(true));
       })
       .catch((err) => {
         console.error('加载用户身份失败:', err);
-        this.setData({ isWorker: false, mode: 'employer' }, () => this.loadBookings(true));
+        this.setData({
+          isWorker: false,
+          mode: 'employer',
+          filterTabs: BOOKING_PAGE_FILTER_TABS.employer,
+          activeFilter: 'pending'
+        }, () => this.loadBookings(true));
       });
+  },
+
+  onTabChange(e) {
+    const detail = e.detail || {};
+    const filter = detail.value;
+    if (!filter || filter === this.data.activeFilter) return;
+    this.setData({
+      activeFilter: filter
+    }, () => this.loadBookings(true));
   },
 
   onRefresh() {
@@ -58,10 +78,10 @@ Page({
     this.setData({ isLoading: true });
 
     const page = reset ? 1 : this.data.page;
-    const { pageSize, mode } = this.data;
+    const { pageSize, mode, activeFilter } = this.data;
     const action = mode === 'worker' ? 'getWorkerBookings' : 'getMyBookings';
 
-    app.callCloudFunction('worker', action, { page, limit: pageSize })
+    app.callCloudFunction('worker', action, { page, limit: pageSize, filter: activeFilter })
       .then((res) => {
         const incoming = (res.data && res.data.list ? res.data.list : []).map((item) => this.normalizeBooking(item));
         this.setData({

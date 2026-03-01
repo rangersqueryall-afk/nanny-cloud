@@ -1,6 +1,6 @@
 <view class="settings-page">
   <view class="card">
-    <view class="title">我的阿姨信息</view>
+    <view class="title">我的信息</view>
     <view class="form-item">
       <text class="label">头像</text>
       <view class="avatar-upload" bindtap="chooseAvatar">

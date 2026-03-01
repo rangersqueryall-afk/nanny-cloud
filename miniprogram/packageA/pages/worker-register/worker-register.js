@@ -147,6 +147,8 @@ Page({
           content: '您的信息已提交，请等待审核通过',
           showCancel: false,
           success: () => {
+            // 注册阿姨成功后提示开启订阅消息
+            app.requestSubscribeNotifications({ showToast: false }).catch(() => null);
             wx.navigateBack();
           }
         });

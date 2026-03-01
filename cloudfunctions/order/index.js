@@ -62,7 +62,91 @@ function toDateSafe(value) {
   return d;
 }
 
+async function getPlatformOpenids() {
+  const res = await db.collection('users').where({ role: 'platform' }).get();
+  return (res.data || []).map((item) => item.openid).filter((id) => !!id);
+}
+
+async function getWorkerOpenid(workerId) {
+  if (!workerId) return '';
+  const userRes = await db.collection('users').where({ role: 'worker', workerId }).limit(1).get();
+  if (userRes.data && userRes.data.length > 0) return userRes.data[0].openid || '';
+  return '';
+}
+
+async function sendSubscribeNotify(payload) {
+  try {
+    await cloud.callFunction({
+      name: 'notify',
+      data: {
+        action: 'send',
+        data: payload
+      }
+    });
+  } catch (err) {
+    console.warn('发送订阅通知失败:', err && (err.message || err.errMsg || err));
+  }
+}
+
+function parseDurationDays(durationValue) {
+  const text = String(durationValue || '').trim();
+  if (!text) return 0;
+
+  const monthMatch = text.match(/(\d+)\s*个?月/);
+  if (monthMatch) {
+    const months = parseInt(monthMatch[1], 10);
+    if (!Number.isNaN(months) && months > 0) return months * 30;
+  }
+
+  const dayMatch = text.match(/(\d+)\s*天/);
+  if (dayMatch) {
+    const days = parseInt(dayMatch[1], 10);
+    if (!Number.isNaN(days) && days > 0) return days;
+  }
+
+  return 0;
+}
+
+function formatDateYmd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function calculateEndDate(startDate, durationValue) {
+  const startText = String(startDate || '').trim();
+  if (!startText) return '';
+  const start = new Date(startText);
+  if (Number.isNaN(start.getTime())) return '';
+
+  const durationDays = parseDurationDays(durationValue);
+  if (durationDays <= 0) return startText;
+
+  const end = new Date(start.getTime());
+  end.setDate(end.getDate() + durationDays - 1);
+  return formatDateYmd(end);
+}
+
+async function syncOrderStatusByDate(openid) {
+  const today = formatDateYmd(new Date());
+  await db.collection('orders')
+    .where({
+      userOpenid: openid,
+      status: _.in(['pending', 'confirmed']),
+      startDate: _.neq('').and(_.lte(today))
+    })
+    .update({
+      data: {
+        status: 'in_service',
+        updatedAt: db.serverDate()
+      }
+    });
+}
+
 async function getList(openid, data) {
+  await syncOrderStatusByDate(openid);
+
   const status = data && data.status ? data.status : 'all';
   const page = data && data.page ? data.page : 1;
   const limit = data && data.limit ? data.limit : 10;
@@ -133,6 +217,8 @@ async function getList(openid, data) {
 }
 
 async function getDetail(openid, data) {
+  await syncOrderStatusByDate(openid);
+
   const id = data.id;
   const orderRes = await db.collection('orders')
     .where({ _id: id, userOpenid: openid })
@@ -246,7 +332,7 @@ async function createFromBooking(openid, data) {
     workerId: booking.workerId,
     serviceType: booking.serviceType || '',
     startDate: booking.startDate || '',
-    endDate: booking.endDate || '',
+    endDate: booking.endDate || calculateEndDate(booking.startDate, booking.duration),
     address: booking.address || '',
     contactName: booking.contactName || '',
     contactPhone: booking.contactPhone || '',
@@ -279,6 +365,28 @@ async function createFromBooking(openid, data) {
       updatedAt: db.serverDate()
     }
   });
+
+  const workerOpenid = await getWorkerOpenid(booking.workerId);
+  if (workerOpenid) {
+    await sendSubscribeNotify({
+      toOpenids: [workerOpenid],
+      page: '/packageB/pages/bookings/bookings',
+      title: '雇主已完成签约下单',
+      target: booking.workerName || '预约单',
+      remark: '请查看订单详情'
+    });
+  }
+
+  const platformOpenids = await getPlatformOpenids();
+  if (platformOpenids.length > 0) {
+    await sendSubscribeNotify({
+      toOpenids: platformOpenids,
+      page: '/packageC/pages/interview-admin/interview-admin',
+      title: '预约已转订单',
+      target: booking.workerName || '预约单',
+      remark: '签约完成，请关注服务进展'
+    });
+  }
 
   return {
     success: true,
@@ -341,6 +449,8 @@ async function complete(openid, data) {
 }
 
 async function getStats(openid, data) {
+  await syncOrderStatusByDate(openid);
+
   // 获取全部订单数量
   const allCount = await db.collection('orders')
     .where({ userOpenid: openid })

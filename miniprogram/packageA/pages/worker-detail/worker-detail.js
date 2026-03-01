@@ -3,7 +3,8 @@
  * 展示阿姨的详细信息、工作经历、用户评价
  */
 const app = getApp();
-const { SERVICE_TYPE_TEXT, USER_ROLE } = require('../../../utils/constants');
+const { SERVICE_TYPE_TEXT } = require('../../../utils/constants');
+const { getRoleFlagsByUser } = require('../../../utils/role');
 
 Page({
   /**
@@ -180,8 +181,8 @@ Page({
       return;
     }
 
-    const userRole = app.globalData.userInfo && app.globalData.userInfo.role ? app.globalData.userInfo.role : USER_ROLE.USER;
-    if (userRole === USER_ROLE.WORKER || userRole === USER_ROLE.PLATFORM) {
+    const roleFlags = getRoleFlagsByUser(app.globalData.userInfo);
+    if (!roleFlags.isEmployer) {
       wx.showToast({
         title: '仅雇主可收藏',
         icon: 'none'

@@ -13,6 +13,7 @@ Page({
     // Tab配置
     tabs: ORDER_PAGE_TABS.map((item) => ({ ...item, count: 0 })),
     currentTab: 0,
+    activeTabValue: ORDER_PAGE_TABS[0].value,
     
     // 订单列表
     orders: [],
@@ -37,8 +38,10 @@ Page({
     // 处理传入的tabIndex参数
     if (options.tabIndex !== undefined) {
       const tabIndex = parseInt(options.tabIndex) || 0;
+      const targetTab = ORDER_PAGE_TABS[tabIndex] || ORDER_PAGE_TABS[0];
       this.setData({
-        currentTab: tabIndex
+        currentTab: tabIndex,
+        activeTabValue: targetTab.value
       });
     }
     
@@ -60,11 +63,19 @@ Page({
    * Tab切换
    */
   onTabChange(e) {
-    const { index } = e.currentTarget.dataset;
-    if (index === this.data.currentTab) return;
+    const detail = e.detail || {};
+    const index = Number(detail.index);
+    const value = detail.value;
+    const nextIndex = Number.isNaN(index)
+      ? this.data.tabs.findIndex((item) => item.value === value)
+      : index;
+    if (nextIndex < 0) return;
+    if (nextIndex === this.data.currentTab) return;
     
+    const tab = this.data.tabs[nextIndex] || {};
     this.setData({
-      currentTab: index,
+      currentTab: nextIndex,
+      activeTabValue: tab.value,
       orders: [],
       page: 1,
       hasMore: true,

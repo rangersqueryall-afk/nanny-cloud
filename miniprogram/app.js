@@ -1,7 +1,8 @@
 /**
  * 应用入口文件
- * 爱心家政 - 保姆/育儿嫂中介小程序（云开发版）
+ * 阿姨快约 - 保姆/育儿嫂中介小程序（云开发版）
  */
+const { SUBSCRIBE_TEMPLATE_IDS } = require('./utils/constants');
 
 App({
   // 全局数据
@@ -239,6 +240,59 @@ App({
           resolve(res.fileID);
         },
         fail: reject
+      });
+    });
+  },
+
+  /**
+   * 请求订阅消息授权
+   * @param {object} options
+   * @param {boolean} options.showToast 是否展示提示
+   */
+  requestSubscribeNotifications(options = {}) {
+    const showToast = options.showToast !== false;
+    const tmplIds = Array.isArray(SUBSCRIBE_TEMPLATE_IDS)
+      ? SUBSCRIBE_TEMPLATE_IDS.filter((id) => typeof id === 'string' && id.trim())
+      : [];
+
+    if (tmplIds.length === 0) {
+      if (showToast) this.showToast('未配置订阅模板ID');
+      return Promise.resolve({ success: false, skipped: true, reason: 'no_template_id' });
+    }
+
+    return new Promise((resolve) => {
+      wx.requestSubscribeMessage({
+        tmplIds,
+        success: (res) => {
+          const acceptedTemplateIds = tmplIds.filter((id) => res[id] === 'accept');
+
+          if (acceptedTemplateIds.length > 0) {
+            this.callCloudFunction('notify', 'registerSubscriptions', {
+              acceptedTemplateIds
+            }).catch((err) => {
+              console.warn('保存订阅授权记录失败:', err);
+            });
+          }
+
+          if (showToast) {
+            if (acceptedTemplateIds.length > 0) {
+              this.showToast('已开启消息通知', 'success');
+            } else {
+              this.showToast('未授权订阅，可稍后再试');
+            }
+          }
+
+          resolve({
+            success: true,
+            acceptedTemplateIds,
+            raw: res
+          });
+        },
+        fail: (err) => {
+          console.error('订阅消息授权失败:', err);
+          if (showToast) this.showToast('订阅授权失败');
+          resolve({ success: false, error: err });
+        }
       });
     });
   }

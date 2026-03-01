@@ -29,6 +29,8 @@ exports.main = async (event, context) => {
       return await getProfile(OPENID);
     } else if (action === 'updateProfile') {
       return await updateProfile(OPENID, data);
+    } else if (action === 'bindPhone') {
+      return await bindPhone(OPENID, data);
     } else if (action === 'registerWorker') {
       return await registerWorker(OPENID, data);
     } else if (action === 'updateWorkerStatus') {
@@ -206,17 +208,112 @@ async function getProfile(openid) {
 
 async function updateProfile(openid, data) {
   try {
-    const updateData = { updatedAt: db.serverDate() };
-    if (data.nickname) updateData.nickname = data.nickname;
-    if (data.avatar) updateData.avatar = data.avatar;
-    if (data.phone) updateData.phone = data.phone;
+    const userRes = await db.collection('users').where({ openid: openid }).limit(1).get();
 
-    await db.collection('users').where({ openid: openid }).update({ data: updateData });
+    const nickname = data && typeof data.nickname === 'string' ? data.nickname.trim() : '';
+    const avatar = data && typeof data.avatar === 'string' ? data.avatar.trim() : '';
+    const phone = data && typeof data.phone === 'string' ? data.phone.trim() : '';
 
-    return { success: true, data: updateData, message: '更新成功' };
+    const profilePatch = { updatedAt: db.serverDate() };
+    if (nickname) profilePatch.nickname = nickname;
+    if (avatar) profilePatch.avatar = avatar;
+    if (phone) profilePatch.phone = phone;
+
+    if (userRes.data.length === 0) {
+      const newUser = {
+        openid,
+        nickname: nickname || '微信用户',
+        avatar: avatar || '/images/default-avatar.png',
+        phone: phone || null,
+        role: 'user',
+        workerId: null,
+        createdAt: db.serverDate(),
+        updatedAt: db.serverDate()
+      };
+      const addRes = await db.collection('users').add({ data: newUser });
+      return {
+        success: true,
+        data: { _id: addRes._id, ...newUser },
+        message: '创建并更新成功'
+      };
+    }
+
+    const user = userRes.data[0];
+    await db.collection('users').doc(user._id).update({ data: profilePatch });
+
+    return {
+      success: true,
+      data: {
+        _id: user._id,
+        nickname: nickname || user.nickname || '',
+        avatar: avatar || user.avatar || '',
+        phone: phone || user.phone || ''
+      },
+      message: '更新成功'
+    };
   } catch (error) {
     console.error('updateProfile函数错误:', error);
     return { success: false, message: error.message };
+  }
+}
+
+async function bindPhone(openid, data) {
+  try {
+    const code = data && data.code ? String(data.code).trim() : '';
+    if (!code) {
+      return { success: false, message: '手机号授权码缺失' };
+    }
+
+    const phoneRes = await cloud.openapi.phonenumber.getPhoneNumber({ code });
+    const phoneInfo = phoneRes && phoneRes.result && phoneRes.result.phoneInfo ? phoneRes.result.phoneInfo : {};
+    const phoneNumber = phoneInfo.purePhoneNumber || phoneInfo.phoneNumber || '';
+
+    if (!phoneNumber) {
+      return { success: false, message: '获取手机号失败' };
+    }
+
+    const userRes = await db.collection('users').where({ openid }).limit(1).get();
+    if (userRes.data.length === 0) {
+      const newUser = {
+        openid,
+        nickname: '微信用户',
+        avatar: '/images/default-avatar.png',
+        phone: phoneNumber,
+        role: 'user',
+        workerId: null,
+        createdAt: db.serverDate(),
+        updatedAt: db.serverDate()
+      };
+      const addRes = await db.collection('users').add({ data: newUser });
+      return {
+        success: true,
+        data: {
+          _id: addRes._id,
+          phone: phoneNumber
+        },
+        message: '绑定成功'
+      };
+    }
+
+    const user = userRes.data[0];
+    await db.collection('users').doc(user._id).update({
+      data: {
+        phone: phoneNumber,
+        updatedAt: db.serverDate()
+      }
+    });
+
+    return {
+      success: true,
+      data: {
+        _id: user._id,
+        phone: phoneNumber
+      },
+      message: '绑定成功'
+    };
+  } catch (error) {
+    console.error('bindPhone函数错误:', error);
+    return { success: false, message: error.message || '绑定失败' };
   }
 }
 

@@ -255,28 +255,28 @@ Page({
       page,
       limit: pageSize
     })
-    .then((res) => {
-      let list = res.data.list || [];
-      
-      this.setData({
-        workers: reset ? list : [...this.data.workers, ...list],
-        page: page + 1,
-        hasMore: list.length >= pageSize,
-        isLoading: false
+      .then((res) => {
+        let list = res.data.list || [];
+
+        this.setData({
+          workers: reset ? list : [...this.data.workers, ...list],
+          page: page + 1,
+          hasMore: list.length >= pageSize,
+          isLoading: false
+        });
+
+        if (callback) callback();
+      })
+      .catch((err) => {
+        console.error('加载阿姨列表失败:', err);
+        this.setData({
+          workers: reset ? [] : this.data.workers,
+          hasMore: false,
+          isLoading: false
+        });
+        app.showToast(err.message || '加载失败');
+        if (callback) callback();
       });
-      
-      if (callback) callback();
-    })
-    .catch((err) => {
-      console.error('加载阿姨列表失败:', err);
-      this.setData({
-        workers: reset ? [] : this.data.workers,
-        hasMore: false,
-        isLoading: false
-      });
-      app.showToast(err.message || '加载失败');
-      if (callback) callback();
-    });
   },
 
   /**
@@ -299,7 +299,11 @@ Page({
       return;
     }
     
-    const { workerId } = e.detail;
+    const { workerId, worker } = e.detail;
+    if (worker && worker.isBooked) {
+      app.showToast('您已预约该阿姨');
+      return;
+    }
     wx.navigateTo({
       url: `/packageA/pages/booking/booking?workerId=${workerId}`
     });

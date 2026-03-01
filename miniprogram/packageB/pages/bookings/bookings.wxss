@@ -114,8 +114,6 @@
 .btn-secondary {
   margin: 0;
   width: 176rpx;
-  height: 58rpx;
-  line-height: 58rpx;
   border-radius: 29rpx;
   background: #f6f6f6;
   color: #666;
