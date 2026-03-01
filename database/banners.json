@@ -4,7 +4,7 @@
   "data": [
     {
       "_id": "b001",
-      "imageUrl": "/images/banner1.jpg",
+      "imageUrl": "https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner1.jpg?sign=855f4a5044f9d1f290f4bec8b7a32686&t=1772349817",
       "title": "专业保姆服务",
       "subtitle": "8年经验，贴心呵护",
       "link": "/pages/workers/workers?type=babysitter",
@@ -15,7 +15,7 @@
     },
     {
       "_id": "b002",
-      "imageUrl": "/images/banner2.jpg",
+      "imageUrl": "https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner2.jpg?sign=c0e65c2597ed3fcba90af93a30b15a95&t=1772349940",
       "title": "专业育儿嫂",
       "subtitle": "科学育儿，陪伴成长",
       "link": "/pages/workers/workers?type=nanny",
@@ -26,7 +26,7 @@
     },
     {
       "_id": "b003",
-      "imageUrl": "/images/banner3.jpg",
+      "imageUrl": "https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner3.jpg?sign=cb8990f9d4a900b15e7a533654e2d40d&t=1772349957",
       "title": "金牌月嫂",
       "subtitle": "产后护理，月子餐制作",
       "link": "/pages/workers/workers?type=maternity",

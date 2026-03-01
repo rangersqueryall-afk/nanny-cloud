@@ -313,49 +313,86 @@ Page({
   },
 
   onBindPhone(e) {
+    console.log('onBindPhone called, event:', e);
     if (!this.data.isLogin) {
       app.showToast('请先登录');
       return;
     }
 
     const detail = e && e.detail ? e.detail : {};
-    if (detail.errMsg !== 'getPhoneNumber:ok' || !detail.code) {
-      wx.showModal({
-        title: '需要手机号授权',
-        content: '未授权手机号将无法完成绑定。请点击“绑定”并允许微信手机号授权。',
-        confirmText: '重新授权',
-        cancelText: '稍后再说',
-        success: (res) => {
-          if (res.confirm) {
-            app.showToast('请再次点击“绑定”完成授权');
+    if (detail.errMsg !== 'getPhoneNumber:ok') {
+      // handle explicit denial or missing permission
+      const msg = detail.errMsg || '';
+      if (msg.indexOf('no permission') !== -1) {
+        wx.showModal({
+          title: '没有获取手机号权限',
+          content: '请在微信设置中开启“获取手机号”权限后再绑定。',
+          confirmText: '去设置',
+          cancelText: '稍后再说',
+          success: (res) => {
+            if (res.confirm) {
+              wx.openSetting();
+            }
           }
-        }
-      });
+        });
+      } else {
+        wx.showModal({
+          title: '需要手机号授权',
+          content: '未授权手机号将无法完成绑定。请点击“绑定”并允许微信手机号授权。',
+          confirmText: '重新授权',
+          cancelText: '稍后再说',
+          success: (res) => {
+            if (res.confirm) {
+              app.showToast('请再次点击“绑定”完成授权');
+            }
+          }
+        });
+      }
       return;
     }
 
-    app.callCloudFunction('user', 'bindPhone', { code: detail.code })
-      .then((res) => {
-        const phone = res && res.data && res.data.phone ? res.data.phone : '';
-        if (!phone) {
-          app.showToast('绑定失败');
+    const { encryptedData, iv } = detail;
+    if (!encryptedData || !iv) {
+      app.showToast('未获取到加密数据，绑定失败');
+      return;
+    }
+
+    // wx.getPhoneNumber 不会返回登录 code；需要先调用 wx.login 获取 code 并一并发送给后端由后端用 session_key 解密
+    wx.login({
+      success: (loginRes) => {
+        const code = loginRes && loginRes.code ? loginRes.code : '';
+        if (!code) {
+          app.showToast('获取登录凭证失败，请重试');
           return;
         }
 
-        this.setData({
-          'userInfo.phone': phone
-        });
+        app.callCloudFunction('user', 'bindPhone', { code, encryptedData, iv })
+          .then((res) => {
+            const phone = res && res.data && res.data.phone ? res.data.phone : '';
+            if (!phone) {
+              app.showToast('绑定失败');
+              return;
+            }
 
-        if (app.globalData.userInfo) {
-          app.globalData.userInfo.phone = phone;
-          wx.setStorageSync('userInfo', app.globalData.userInfo);
-        }
+            this.setData({
+              'userInfo.phone': phone
+            });
 
-        app.showToast('手机号已绑定', 'success');
-      })
-      .catch((err) => {
-        app.showToast(err.message || '绑定失败');
-      });
+            if (app.globalData.userInfo) {
+              app.globalData.userInfo.phone = phone;
+              wx.setStorageSync('userInfo', app.globalData.userInfo);
+            }
+
+            app.showToast('手机号已绑定', 'success');
+          })
+          .catch((err) => {
+            app.showToast(err.message || '绑定失败');
+          });
+      },
+      fail: () => {
+        app.showToast('获取登录凭证失败，请重试');
+      }
+    });
   },
 
   /**

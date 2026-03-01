@@ -41,19 +41,19 @@ Page({
     banners: [
       {
         id: 1,
-        image: '/images/banner1.jpg',
+        image: 'https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner1.jpg?sign=855f4a5044f9d1f290f4bec8b7a32686&t=1772349817',
         title: '专业服务 值得信赖',
         link: '/pages/workers/workers'
       },
       {
         id: 2,
-        image: '/images/banner2.jpg',
+        image: 'https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner2.jpg?sign=c0e65c2597ed3fcba90af93a30b15a95&t=1772349940',
         title: '优质阿姨 等您挑选',
         link: '/pages/workers/workers'
       },
       {
         id: 3,
-        image: '/images/banner3.jpg',
+        image: 'https://636c-cloud1-9gb9q6d09a380783-1256037011.tcb.qcloud.la/images/banner3.jpg?sign=cb8990f9d4a900b15e7a533654e2d40d&t=1772349957',
         title: '新用户首单优惠',
         link: '/packageA/pages/booking/booking'
       }
