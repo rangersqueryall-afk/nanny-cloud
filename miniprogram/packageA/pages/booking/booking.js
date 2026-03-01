@@ -391,7 +391,7 @@ Page({
         wx.showModal({
           title: '预约成功',
           content: '是否开启消息通知，及时接收预约和面试进展？',
-          confirmText: '开启并查看',
+          confirmText: '开启通知',
           cancelText: '稍后再说',
           success: (res) => {
             if (!res.confirm) {

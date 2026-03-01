@@ -154,7 +154,7 @@
       </text>
     </view>
     <button class="btn-submit {{isSubmitting ? 'disabled' : ''}}" bindtap="onSubmit">
-      {{isSubmitting ? '提交中...' : '提交订单'}}
+      {{isSubmitting ? '提交中...' : '提交预约'}}
     </button>
   </view>
 </view>
