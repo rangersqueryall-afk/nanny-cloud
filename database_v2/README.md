@@ -90,7 +90,7 @@
 - `workerAvatar`
 - `workerPhone`
 - `serviceType`
-- `serviceMode`
+- `serviceSchedule`
 - `startDate`
 - `endDate`
 - `duration`

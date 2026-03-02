@@ -4,6 +4,20 @@
  */
 const app = getApp();
 const { isValidPhone, formatDate } = require('../../../utils/util');
+const { SERVICE_TYPE_TEXT, SERVICE_SCHEDULE_TEXT } = require('../../../utils/constants');
+
+const SERVICE_TYPE_ORDER = ['babysitter', 'nanny', 'maternity', 'elderly', 'hourly'];
+const SERVICE_SCHEDULE_OPTIONS = {
+  nonHourly: [
+    { id: 'livein', name: SERVICE_SCHEDULE_TEXT.livein, desc: '24小时住家' },
+    { id: 'daytime', name: SERVICE_SCHEDULE_TEXT.daytime, desc: '白天工作' }
+  ],
+  hourly: [
+    { id: 'temporary', name: SERVICE_SCHEDULE_TEXT.temporary, desc: '按小时计费' }
+  ]
+};
+const DURATION_MONTHS = [1, 3, 6, 12, 24];
+const HOURLY_HOURS = [2, 4, 6, 8];
 
 Page({
   /**
@@ -14,20 +28,18 @@ Page({
     worker: {},
     workerId: null,
     
-    // 服务类型
-    serviceTypes: [
-      { id: 'livein', name: '住家服务', desc: '24小时住家', price: 1 },
-      { id: 'daytime', name: '白班服务', desc: '白天工作', price: 0.8 },
-      { id: 'temporary', name: '临时服务', desc: '按小时计费', price: 0 }
-    ],
-    selectedServiceType: 'livein',
+    // 服务类型 & 服务方式
+    serviceTypeOptions: [],
+    selectedServiceType: '',
+    serviceScheduleOptions: [],
+    selectedServiceSchedule: '',
     
     // 服务时间
     startDate: '',
     minDate: '',
-    durationOptions: ['1个月', '3个月', '6个月', '12个月', '24个月'],
+    durationOptions: DURATION_MONTHS.map((month) => `${month}个月`),
     durationIndex: -1,
-    dailyHoursOptions: ['2小时', '4小时', '6小时', '8小时'],
+    dailyHoursOptions: HOURLY_HOURS.map((hour) => `${hour}小时`),
     dailyHoursIndex: -1,
     
     // 联系信息
@@ -98,7 +110,7 @@ Page({
             serviceTypes: Array.isArray(worker.serviceTypes) ? worker.serviceTypes : []
           }
         }, () => {
-          this.calculatePrice();
+          this.initServiceSelection();
         });
       })
       .catch((err) => {
@@ -124,12 +136,78 @@ Page({
   },
 
   /**
-   * 选择服务类型
+   * 初始化服务类型和服务方式
+   */
+  initServiceSelection() {
+    const workerServiceTypes = this.data.worker && Array.isArray(this.data.worker.serviceTypes)
+      ? this.data.worker.serviceTypes
+      : [];
+
+    const serviceTypeOptions = SERVICE_TYPE_ORDER
+      .filter((type) => workerServiceTypes.includes(type))
+      .map((type) => ({
+        id: type,
+        name: SERVICE_TYPE_TEXT[type] || type,
+        desc: type === 'hourly' ? '按小时计费' : '月度家政服务'
+      }));
+
+    const finalTypeOptions = serviceTypeOptions.length > 0
+      ? serviceTypeOptions
+      : SERVICE_TYPE_ORDER.map((type) => ({
+          id: type,
+          name: SERVICE_TYPE_TEXT[type] || type,
+          desc: type === 'hourly' ? '按小时计费' : '月度家政服务'
+        }));
+
+    const selectedServiceType = finalTypeOptions[0] ? finalTypeOptions[0].id : '';
+    const serviceScheduleOptions = this.getServiceScheduleOptions(selectedServiceType);
+    const selectedServiceSchedule = serviceScheduleOptions[0] ? serviceScheduleOptions[0].id : '';
+
+    this.setData({
+      serviceTypeOptions: finalTypeOptions,
+      selectedServiceType,
+      serviceScheduleOptions,
+      selectedServiceSchedule,
+      dailyHoursIndex: selectedServiceSchedule === 'temporary' ? this.data.dailyHoursIndex : -1
+    }, () => {
+      this.calculatePrice();
+    });
+  },
+
+  getServiceScheduleOptions(serviceType) {
+    if (serviceType === 'hourly') return SERVICE_SCHEDULE_OPTIONS.hourly;
+    return SERVICE_SCHEDULE_OPTIONS.nonHourly;
+  },
+
+  /**
+   * 选择服务类型（保姆/育儿嫂/月嫂/护老/钟点工）
    */
   onSelectServiceType(e) {
     const { id } = e.currentTarget.dataset;
+    if (!id || id === this.data.selectedServiceType) return;
+
+    const serviceScheduleOptions = this.getServiceScheduleOptions(id);
+    const selectedServiceSchedule = serviceScheduleOptions[0] ? serviceScheduleOptions[0].id : '';
+
     this.setData({
-      selectedServiceType: id
+      selectedServiceType: id,
+      serviceScheduleOptions,
+      selectedServiceSchedule,
+      dailyHoursIndex: selectedServiceSchedule === 'temporary' ? this.data.dailyHoursIndex : -1
+    }, () => {
+      this.calculatePrice();
+    });
+  },
+
+  /**
+   * 选择服务方式（住家/白班/临时）
+   */
+  onSelectServiceSchedule(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id || id === this.data.selectedServiceSchedule) return;
+    this.setData({
+      selectedServiceSchedule: id,
+      dailyHoursIndex: id === 'temporary' ? this.data.dailyHoursIndex : -1
     }, () => {
       this.calculatePrice();
     });
@@ -208,7 +286,7 @@ Page({
    * 计算价格
    */
   calculatePrice() {
-    const { worker, selectedServiceType, durationIndex, dailyHoursIndex } = this.data;
+    const { worker, selectedServiceSchedule, durationIndex, dailyHoursIndex } = this.data;
     
     if (!worker.price) return;
     
@@ -216,27 +294,22 @@ Page({
     let totalPrice = 0;
     let totalDays = 30;
     
-    // 根据服务类型计算
-    const serviceType = this.data.serviceTypes.find(t => t.id === selectedServiceType);
-    
-    if (selectedServiceType === 'livein') {
+    if (selectedServiceSchedule === 'livein') {
       // 住家服务
       servicePrice = worker.price;
-    } else if (selectedServiceType === 'daytime') {
+    } else if (selectedServiceSchedule === 'daytime') {
       // 白班服务
       servicePrice = Math.floor(worker.price * 0.8);
-    } else if (selectedServiceType === 'temporary') {
+    } else if (selectedServiceSchedule === 'temporary') {
       // 临时服务按小时计费
-      const hours = [2, 4, 6, 8];
-      const selectedHours = dailyHoursIndex >= 0 ? hours[dailyHoursIndex] : 2;
+      const selectedHours = dailyHoursIndex >= 0 ? HOURLY_HOURS[dailyHoursIndex] : HOURLY_HOURS[0];
       servicePrice = this.data.hourlyPrice * selectedHours;
     }
     
     // 根据时长计算
-    const durations = [1, 3, 6, 12];
-    const selectedDuration = durationIndex >= 0 ? durations[durationIndex] : 1;
+    const selectedDuration = durationIndex >= 0 ? DURATION_MONTHS[durationIndex] : DURATION_MONTHS[0];
     
-    if (selectedServiceType === 'temporary') {
+    if (selectedServiceSchedule === 'temporary') {
       totalDays = selectedDuration * 30;
       totalPrice = servicePrice * totalDays;
     } else {
@@ -257,6 +330,7 @@ Page({
   validateForm() {
     const { 
       selectedServiceType, 
+      selectedServiceSchedule,
       startDate, 
       durationIndex, 
       dailyHoursIndex,
@@ -282,9 +356,25 @@ Page({
       });
       return false;
     }
+
+    if (!selectedServiceType) {
+      wx.showToast({
+        title: '请选择服务类型',
+        icon: 'none'
+      });
+      return false;
+    }
+
+    if (!selectedServiceSchedule) {
+      wx.showToast({
+        title: '请选择服务方式',
+        icon: 'none'
+      });
+      return false;
+    }
     
     // 临时服务验证每日时长
-    if (selectedServiceType === 'temporary' && dailyHoursIndex < 0) {
+    if (selectedServiceSchedule === 'temporary' && dailyHoursIndex < 0) {
       wx.showToast({
         title: '请选择每日时长',
         icon: 'none'
@@ -341,16 +431,11 @@ Page({
     
     this.setData({ isSubmitting: true });
     
-    // 构建订单数据
-    const workerServiceTypes = this.data.worker && Array.isArray(this.data.worker.serviceTypes)
-      ? this.data.worker.serviceTypes
-      : [];
-    const workerPrimaryType = workerServiceTypes.length > 0 ? workerServiceTypes[0] : '';
-
+    // 构建预约数据
     const orderData = {
       workerId: this.data.workerId,
-      serviceType: workerPrimaryType,
-      serviceMode: this.data.selectedServiceType,
+      serviceType: this.data.selectedServiceType,
+      serviceSchedule: this.data.selectedServiceSchedule,
       startDate: this.data.startDate,
       duration: this.data.durationOptions[this.data.durationIndex],
       dailyHours: this.data.dailyHoursIndex >= 0 ? this.data.dailyHoursOptions[this.data.dailyHoursIndex] : null,

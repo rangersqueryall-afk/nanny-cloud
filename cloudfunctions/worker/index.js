@@ -10,6 +10,7 @@ const _ = db.command;
 const ACTIVE_BOOKING_STATUS = ['pending', 'accepted', 'interview_scheduled', 'interview_passed'];
 const EMPLOYER_CANCELABLE_STATUS = ['pending', 'accepted', 'interview_scheduled', 'interview_passed'];
 const WORKER_SERVICE_TYPES = ['babysitter', 'nanny', 'maternity', 'elderly', 'hourly'];
+const SERVICE_SCHEDULE_TYPES = ['livein', 'daytime', 'temporary'];
 const BOOKING_FILTER = {
   ALL: 'all',
   PENDING: 'pending',
@@ -176,6 +177,14 @@ function normalizeWorkerServiceType(inputType, worker) {
     return String(worker.serviceTypes[0]);
   }
   return direct;
+}
+
+function normalizeServiceSchedule(serviceType, inputSchedule) {
+  const direct = String(inputSchedule || '').trim();
+  if (serviceType === 'hourly') return 'temporary';
+  if (direct === 'livein' || direct === 'daytime') return direct;
+  if (SERVICE_SCHEDULE_TYPES.includes(direct) && direct !== 'temporary') return direct;
+  return 'daytime';
 }
 
 function formatPagination(page, limit, total) {
@@ -602,7 +611,10 @@ async function bookWorker(openid, data) {
     }
 
     const serviceType = normalizeWorkerServiceType(data.serviceType, worker);
-    const serviceMode = String(data.serviceMode || data.serviceType || '').trim();
+    const serviceSchedule = normalizeServiceSchedule(
+      serviceType,
+      data.serviceSchedule || data.serviceMode
+    );
     const startDate = data.startDate || '';
     const duration = data.duration || '';
 
@@ -616,7 +628,8 @@ async function bookWorker(openid, data) {
       workerAvatar: worker.avatar || '/images/default-avatar.png',
       workerPhone: worker.phone || '',
       serviceType,
-      serviceMode,
+      serviceSchedule,
+      serviceMode: serviceSchedule,
       startDate,
       endDate: calculateEndDate(startDate, duration),
       duration,

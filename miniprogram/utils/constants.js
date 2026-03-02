@@ -5,14 +5,17 @@ const USER_ROLE = {
 };
 
 const SERVICE_TYPE_TEXT = {
-  livein: '住家服务',
-  daytime: '白班服务',
-  temporary: '临时服务',
-  babysitter: ' f',
+  babysitter: '保姆',
   nanny: '育儿嫂',
   maternity: '月嫂',
   elderly: '护老',
   hourly: '钟点工'
+};
+
+const SERVICE_SCHEDULE_TEXT = {
+  livein: '住家服务',
+  daytime: '白班服务',
+  temporary: '临时服务'
 };
 
 const ORDER_STATUS = {
@@ -114,6 +117,7 @@ const SUBSCRIBE_TEMPLATE_IDS = ['3kEwF7K4ESVuK7MuQu-lyfPagnCmdtUrJhnn27UaR6w'];
 module.exports = {
   USER_ROLE,
   SERVICE_TYPE_TEXT,
+  SERVICE_SCHEDULE_TEXT,
   ORDER_STATUS,
   ORDER_LIST_STATUS_TEXT,
   ORDER_DETAIL_STATUS_TEXT,

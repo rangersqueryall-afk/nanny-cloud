@@ -23,10 +23,27 @@
     <view class="service-types">
       <view 
         class="type-item {{selectedServiceType === item.id ? 'active' : ''}}"
-        wx:for="{{serviceTypes}}"
+        wx:for="{{serviceTypeOptions}}"
         wx:key="id"
         data-id="{{item.id}}"
         bindtap="onSelectServiceType"
+      >
+        <text class="type-name">{{item.name}}</text>
+        <text class="type-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务方式选择 -->
+  <view class="section-card card">
+    <view class="section-title">选择服务方式</view>
+    <view class="service-types">
+      <view 
+        class="type-item {{selectedServiceSchedule === item.id ? 'active' : ''}}"
+        wx:for="{{serviceScheduleOptions}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onSelectServiceSchedule"
       >
         <text class="type-name">{{item.name}}</text>
         <text class="type-desc">{{item.desc}}</text>
@@ -59,7 +76,7 @@
     </view>
     
     <!-- 每日时长（临时服务） -->
-    <view class="form-item" wx:if="{{selectedServiceType === 'temporary'}}">
+    <view class="form-item" wx:if="{{selectedServiceSchedule === 'temporary'}}">
       <text class="item-label">每日时长</text>
       <picker mode="selector" range="{{dailyHoursOptions}}" value="{{dailyHoursIndex}}" bindchange="onDailyHoursChange">
         <view class="picker-value {{dailyHoursIndex >= 0 ? '' : 'placeholder'}}">
@@ -130,7 +147,7 @@
       <text class="price-label">服务费用</text>
       <text class="price-value">¥{{servicePrice}}</text>
     </view>
-    <view class="price-row" wx:if="{{selectedServiceType === 'temporary'}}">
+    <view class="price-row" wx:if="{{selectedServiceSchedule === 'temporary'}}">
       <text class="price-label">每日时长费用</text>
       <text class="price-value">¥{{hourlyPrice}} x {{totalDays}}天</text>
     </view>
