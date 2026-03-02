@@ -61,7 +61,14 @@ Page({
         statusText: BOOKING_STATUS_TEXT[item.status] || item.status || '未知状态',
         createdAtText: this.formatDate(item.createdAt),
         canSchedule: item.status === BOOKING_STATUS.ACCEPTED,
-        canSetResult: item.status === BOOKING_STATUS.INTERVIEW_SCHEDULED
+        canSetResult: item.status === BOOKING_STATUS.INTERVIEW_SCHEDULED,
+        discountFactor: this.normalizeDiscountFactor(item.discountFactor),
+        canSetDiscount: ![
+          BOOKING_STATUS.REJECTED,
+          BOOKING_STATUS.INTERVIEW_FAILED,
+          BOOKING_STATUS.CANCELLED_BY_EMPLOYER,
+          BOOKING_STATUS.TERMINATED
+        ].includes(item.status)
       }));
       this.setData({
         list: reset ? list : this.data.list.concat(list),
@@ -124,6 +131,41 @@ Page({
         }).catch((err) => app.showToast(err.message || '操作失败'));
       }
     });
+  },
+
+  onSetDiscount(e) {
+    const bookingId = e.currentTarget.dataset.bookingId;
+    const current = this.normalizeDiscountFactor(e.currentTarget.dataset.discountFactor);
+    if (!bookingId) return;
+
+    wx.showModal({
+      title: '设置折扣系数',
+      editable: true,
+      placeholderText: '请输入 0.01 - 1，默认 1',
+      content: String(current),
+      success: (res) => {
+        if (!res.confirm) return;
+        const value = (res.content || '').trim();
+        const parsed = Number(value === '' ? 1 : value);
+        if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 1) {
+          app.showToast('请输入 0.01 - 1 的数字');
+          return;
+        }
+        app.callCloudFunction('worker', 'platformSetBookingDiscount', {
+          bookingId,
+          discountFactor: Number(parsed.toFixed(2))
+        }).then(() => {
+          app.showToast('折扣系数已更新', 'success');
+          this.loadList(true);
+        }).catch((err) => app.showToast(err.message || '操作失败'));
+      }
+    });
+  },
+
+  normalizeDiscountFactor(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0 || n > 1) return 1;
+    return Number(n.toFixed(2));
   },
 
   formatDate(value) {

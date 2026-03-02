@@ -187,6 +187,14 @@ function normalizeServiceSchedule(serviceType, inputSchedule) {
   return 'daytime';
 }
 
+function normalizeDiscountFactor(inputValue) {
+  if (inputValue === undefined || inputValue === null || inputValue === '') return 1;
+  const factor = Number(inputValue);
+  if (!Number.isFinite(factor)) throw new Error('折扣系数格式错误');
+  if (factor <= 0 || factor > 1) throw new Error('折扣系数需大于0且不超过1');
+  return Number(factor.toFixed(2));
+}
+
 function formatPagination(page, limit, total) {
   return {
     page,
@@ -247,6 +255,7 @@ exports.main = async (event, context) => {
     if (action === 'rejectBooking') return await rejectBooking(OPENID, data);
     if (action === 'platformScheduleInterview') return await platformScheduleInterview(OPENID, data);
     if (action === 'platformSetInterviewResult') return await platformSetInterviewResult(OPENID, data);
+    if (action === 'platformSetBookingDiscount') return await platformSetBookingDiscount(OPENID, data);
     return { success: false, message: '未知操作' };
   } catch (error) {
     return { success: false, message: error.message };
@@ -634,8 +643,10 @@ async function bookWorker(openid, data) {
       endDate: calculateEndDate(startDate, duration),
       duration,
       dailyHours: data.dailyHours || '',
+      monthlySalary: Number(data.monthlySalary) || 0,
       address: data.address || '',
       totalPrice: data.totalPrice || 0,
+      discountFactor: 1,
       contactName: data.contactName || '',
       contactPhone: data.contactPhone || '',
       remark: data.remark || '',
@@ -892,4 +903,30 @@ async function platformSetInterviewResult(openid, data) {
   }
 
   return { success: true, message: passed ? '已标记面试通过' : '已标记面试未通过' };
+}
+
+async function platformSetBookingDiscount(openid, data) {
+  await assertPlatform(openid);
+  const bookingId = data && data.bookingId;
+  if (!bookingId) return { success: false, message: '预约ID不能为空' };
+
+  const booking = await getBookingById(bookingId);
+  if (!booking) return { success: false, message: '预约不存在' };
+  if (['rejected', 'interview_failed', 'cancelled_by_employer', 'terminated'].includes(booking.status)) {
+    return { success: false, message: '当前预约状态不可设置折扣' };
+  }
+
+  const discountFactor = normalizeDiscountFactor(data && data.discountFactor);
+  await db.collection('bookings').doc(bookingId).update({
+    data: {
+      discountFactor,
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return {
+    success: true,
+    data: { discountFactor },
+    message: '折扣系数已更新'
+  };
 }

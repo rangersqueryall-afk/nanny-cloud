@@ -66,7 +66,16 @@
 - `contactPhone`
 - `remark`
 - `price`
-- `status`（`pending/confirmed/in_service/completed/cancelled`）
+- `paymentStatus`（`unpaid/paid`）
+- `monthlySalary`
+- `agencyFeeMonths`
+- `agencyFeeBase`
+- `discountFactor`（默认 `1`）
+- `agencyFee`
+- `firstMonthSalary`
+- `payableTotal`
+- `paidAmount`
+- `status`（`pending_payment/pending/confirmed/in_service/completed/cancelled`）
 - `contractSigned`
 - `contractSignedAt`
 - `createdAt`
@@ -95,6 +104,8 @@
 - `endDate`
 - `duration`
 - `dailyHours`
+- `monthlySalary`
+- `discountFactor`（默认 `1`）
 - `address`
 - `totalPrice`
 - `contactName`

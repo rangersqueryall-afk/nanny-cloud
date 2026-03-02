@@ -80,17 +80,29 @@
     </view>
     
     <view class="price-detail">
-      <view class="price-row">
-        <text class="price-label">服务费用</text>
+      <view class="price-row" wx:if="{{order.monthlySalary > 0}}">
+        <text class="price-label">首月工资</text>
         <text class="price-value">¥{{order.servicePrice}}</text>
       </view>
-      <view class="price-row" wx:if="{{order.discount > 0}}">
+      <view class="price-row" wx:if="{{order.monthlySalary > 0}}">
+        <text class="price-label">中介费</text>
+        <text class="price-value">¥{{order.agencyFee}}</text>
+      </view>
+      <view class="price-row" wx:if="{{order.showDiscount}}">
+        <text class="price-label">折扣系数</text>
+        <text class="price-value">{{order.discountFactor}}</text>
+      </view>
+      <view class="price-row" wx:if="{{order.showDiscount && order.discount > 0}}">
         <text class="price-label">优惠</text>
         <text class="price-value discount">-¥{{order.discount}}</text>
       </view>
+      <view class="price-row" wx:if="{{order.monthlySalary <= 0}}">
+        <text class="price-label">服务费用</text>
+        <text class="price-value">¥{{order.totalPrice}}</text>
+      </view>
       <view class="divider"></view>
       <view class="price-row total">
-        <text class="price-label">实付金额</text>
+        <text class="price-label">{{order.paymentStatus === 'paid' ? '已付金额' : '应付金额'}}</text>
         <text class="price-total">¥{{order.totalPrice}}</text>
       </view>
     </view>

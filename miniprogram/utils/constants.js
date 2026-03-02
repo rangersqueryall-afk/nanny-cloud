@@ -19,6 +19,7 @@ const SERVICE_SCHEDULE_TEXT = {
 };
 
 const ORDER_STATUS = {
+  PENDING_PAYMENT: 'pending_payment',
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   SERVING: 'serving',
@@ -28,6 +29,7 @@ const ORDER_STATUS = {
 };
 
 const ORDER_LIST_STATUS_TEXT = {
+  [ORDER_STATUS.PENDING_PAYMENT]: '待支付',
   [ORDER_STATUS.PENDING]: '待服务',
   [ORDER_STATUS.CONFIRMED]: '待服务',
   [ORDER_STATUS.SERVING]: '服务中',
@@ -37,6 +39,7 @@ const ORDER_LIST_STATUS_TEXT = {
 };
 
 const ORDER_DETAIL_STATUS_TEXT = {
+  [ORDER_STATUS.PENDING_PAYMENT]: '待支付',
   [ORDER_STATUS.PENDING]: '待服务',
   [ORDER_STATUS.CONFIRMED]: '已确认',
   [ORDER_STATUS.SERVING]: '服务中',
@@ -112,7 +115,7 @@ const BOOKING_PAGE_FILTER_TABS = {
 
 // 订阅消息模板ID（请替换为你小程序后台已配置的模板ID）
 // 例如：['xxxxxx_template_id']
-const SUBSCRIBE_TEMPLATE_IDS = ['3kEwF7K4ESVuK7MuQu-lyfPagnCmdtUrJhnn27UaR6w'];
+const SUBSCRIBE_TEMPLATE_IDS = ['voWf8uAOYby7q9qWNoP7oVH2C-Mav9kLf0OjJg4Qkcg'];
 
 module.exports = {
   USER_ROLE,

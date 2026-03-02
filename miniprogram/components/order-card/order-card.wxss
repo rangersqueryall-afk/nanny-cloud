@@ -31,6 +31,10 @@
   color: #FAAD14;
 }
 
+.order-status.pending_payment {
+  color: #FA8C16;
+}
+
 .order-status.confirmed {
   color: #1890FF;
 }

@@ -75,9 +75,16 @@ Page({
           remark: order.remark || '',
           createTime: this.formatDateTime(order.createdAt),
           duration: '',
-          servicePrice: order.price || 0,
-          discount: 0,
-          totalPrice: order.price || 0,
+          servicePrice: order.firstMonthSalary || 0,
+          monthlySalary: order.monthlySalary || 0,
+          agencyFeeBase: order.agencyFeeBase || 0,
+          agencyFee: order.agencyFee || 0,
+          discountFactor: order.discountFactor || 1,
+          showDiscount: !!order.showDiscount,
+          discount: order.showDiscount ? Math.max(0, (order.agencyFeeBase || 0) - (order.agencyFee || 0)) : 0,
+          totalPrice: order.payableTotal || order.price || 0,
+          paidAmount: order.paidAmount || 0,
+          paymentStatus: order.paymentStatus || '',
           isReviewed: false
         };
         this.setData({
@@ -124,6 +131,10 @@ Page({
         statusIcon = '⏳';
         statusDesc = '订单已提交，等待确认';
         break;
+      case ORDER_STATUS.PENDING_PAYMENT:
+        statusIcon = '💳';
+        statusDesc = '已签约待支付，支付后订单生效';
+        break;
       case ORDER_STATUS.CONFIRMED:
         statusIcon = '✅';
         statusDesc = '订单已确认，等待服务开始';
@@ -162,6 +173,9 @@ Page({
     let completedSteps = 0;
     
     switch (order.status) {
+      case ORDER_STATUS.PENDING_PAYMENT:
+        completedSteps = 1;
+        break;
       case ORDER_STATUS.PENDING:
         completedSteps = 1;
         break;
@@ -198,6 +212,12 @@ Page({
     let buttons = [];
     
     switch (order.status) {
+      case ORDER_STATUS.PENDING_PAYMENT:
+        buttons = [
+          { text: '取消', action: 'cancel', type: 'default' },
+          { text: '去支付', action: 'pay', type: 'primary' }
+        ];
+        break;
       case ORDER_STATUS.PENDING:
         buttons = [
           { text: '取消', action: 'cancel', type: 'default' },
@@ -253,6 +273,9 @@ Page({
         break;
       case 'complete':
         this.handleComplete(orderId);
+        break;
+      case 'pay':
+        this.handlePay(orderId);
         break;
       case 'review':
         this.handleReview(orderId);
@@ -326,6 +349,35 @@ Page({
         }
       }
     });
+  },
+
+  handlePay(orderId) {
+    app.callCloudFunction('order', 'payOrder', { orderId })
+      .then((ret) => {
+        const payment = ret.data && ret.data.payment;
+        if (!payment) {
+          app.showToast('支付参数异常');
+          return;
+        }
+        wx.requestPayment({
+          ...payment,
+          success: () => {
+            app.callCloudFunction('order', 'confirmPaid', { orderId })
+              .then(() => {
+                wx.showToast({ title: '支付成功', icon: 'success' });
+                setTimeout(() => this.loadOrderDetail(orderId), 300);
+              })
+              .catch((err) => app.showToast(err.message || '支付确认失败'));
+          },
+          fail: (err) => {
+            const msg = err && err.errMsg && err.errMsg.includes('cancel')
+              ? '已取消支付'
+              : '支付未完成';
+            app.showToast(msg);
+          }
+        });
+      })
+      .catch((err) => app.showToast(err.message || '拉起支付失败'));
   },
 
   /**

@@ -53,6 +53,12 @@ Component({
       let buttons = [];
       
       switch (status) {
+        case ORDER_STATUS.PENDING_PAYMENT: // 待支付
+          buttons = [
+            { text: '取消', action: 'cancel', type: 'default' },
+            { text: '支付', action: 'pay', type: 'primary' }
+          ];
+          break;
         case ORDER_STATUS.PENDING: // 待确认
           buttons = [
             { text: '取消', action: 'cancel', type: 'default' },

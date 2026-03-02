@@ -25,7 +25,7 @@ App({
     } else {
       try {
         wx.cloud.init({
-          env: 'cloud1-9gb9q6d09a380783',
+          env: 'cloud1-3ga3en5ge1602c36',
           traceUser: true
         });
         console.log('云开发初始化成功');

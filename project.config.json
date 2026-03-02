@@ -49,8 +49,8 @@
     }
   },
   "compileType": "miniprogram",
-  "libVersion": "3.0.0",
-  "appid": "wx07809ec41561acdd",
+  "libVersion": "3.14.2",
+  "appid": "wxaca8338338ee19c4",
   "projectname": "nanny-miniprogram-cloud",
   "condition": {},
   "editorSetting": {

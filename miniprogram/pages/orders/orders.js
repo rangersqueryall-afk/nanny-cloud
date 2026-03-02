@@ -248,6 +248,9 @@ Page({
       case 'complete':
         this.handleComplete(orderId);
         break;
+      case 'pay':
+        this.handlePay(orderId);
+        break;
       case 'review':
         this.handleReview(orderId);
         break;
@@ -322,6 +325,34 @@ Page({
         }
       }
     });
+  },
+
+  handlePay(orderId) {
+    app.callCloudFunction('order', 'payOrder', { orderId })
+      .then((ret) => {
+        const payment = ret.data && ret.data.payment;
+        if (!payment) {
+          app.showToast('支付参数异常');
+          return;
+        }
+        wx.requestPayment({
+          ...payment,
+          success: () => {
+            app.callCloudFunction('order', 'confirmPaid', { orderId })
+              .then(() => {
+                wx.showToast({ title: '支付成功', icon: 'success' });
+                this.loadOrders(true);
+                this.loadOrderCounts();
+              })
+              .catch((err) => app.showToast(err.message || '支付确认失败'));
+          },
+          fail: (err) => {
+            const msg = err && err.errMsg && err.errMsg.includes('cancel') ? '已取消支付' : '支付未完成';
+            app.showToast(msg);
+          }
+        });
+      })
+      .catch((err) => app.showToast(err.message || '拉起支付失败'));
   },
 
   /**

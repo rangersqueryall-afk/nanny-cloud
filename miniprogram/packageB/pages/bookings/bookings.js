@@ -175,19 +175,50 @@ Page({
           contractSigned: true
         })
           .then((ret) => {
-            app.showToast('订单创建成功', 'success');
             const orderId = ret.data && ret.data.orderId;
-            if (orderId) {
-              setTimeout(() => {
-                wx.navigateTo({ url: `/packageB/pages/order-detail/order-detail?id=${orderId}` });
-              }, 300);
-            } else {
+            if (!orderId) {
               this.loadBookings(true);
+              return;
             }
+            this.payForOrder(orderId);
           })
           .catch((err) => app.showToast(err.message || '提交失败'));
       }
     });
+  },
+
+  payForOrder(orderId) {
+    app.callCloudFunction('order', 'payOrder', { orderId })
+      .then((ret) => {
+        const payment = ret.data && ret.data.payment;
+        if (!payment) {
+          app.showToast('支付参数异常');
+          return;
+        }
+        wx.requestPayment({
+          ...payment,
+          success: () => {
+            app.callCloudFunction('order', 'confirmPaid', { orderId })
+              .then(() => {
+                app.showToast('支付成功', 'success');
+                setTimeout(() => {
+                  wx.navigateTo({ url: `/packageB/pages/order-detail/order-detail?id=${orderId}` });
+                }, 300);
+              })
+              .catch((err) => app.showToast(err.message || '支付确认失败'));
+          },
+          fail: (err) => {
+            const msg = err && err.errMsg && err.errMsg.includes('cancel')
+              ? '您已取消支付，可在订单详情继续支付'
+              : '支付未完成，可在订单详情重试';
+            app.showToast(msg);
+            setTimeout(() => {
+              wx.navigateTo({ url: `/packageB/pages/order-detail/order-detail?id=${orderId}` });
+            }, 300);
+          }
+        });
+      })
+      .catch((err) => app.showToast(err.message || '拉起支付失败'));
   },
 
   onViewOrder(e) {

@@ -28,10 +28,18 @@
         <view class="row"><text class="label">提交时间：</text><text>{{item.createdAtText}}</text></view>
         <view class="row" wx:if="{{item.serviceType}}"><text class="label">服务类型：</text><text>{{item.serviceType}}</text></view>
         <view class="row" wx:if="{{item.startDate}}"><text class="label">开始日期：</text><text>{{item.startDate}}</text></view>
+        <view class="row"><text class="label">折扣系数：</text><text>{{item.discountFactor}}</text></view>
         <view class="row" wx:if="{{item.interviewTime}}"><text class="label">面试时间：</text><text>{{item.interviewTime}}</text></view>
         <view class="row" wx:if="{{item.platformNote}}"><text class="label">平台备注：</text><text>{{item.platformNote}}</text></view>
 
         <view class="actions">
+          <button
+            class="btn-primary"
+            wx:if="{{item.canSetDiscount}}"
+            data-booking-id="{{item._id}}"
+            data-discount-factor="{{item.discountFactor}}"
+            bindtap="onSetDiscount"
+          >设置折扣</button>
           <button
             class="btn-primary"
             wx:if="{{item.canSchedule}}"

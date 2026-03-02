@@ -439,6 +439,7 @@ Page({
       startDate: this.data.startDate,
       duration: this.data.durationOptions[this.data.durationIndex],
       dailyHours: this.data.dailyHoursIndex >= 0 ? this.data.dailyHoursOptions[this.data.dailyHoursIndex] : null,
+      monthlySalary: this.data.servicePrice || 0,
       contactName: this.data.contactName,
       contactPhone: this.data.contactPhone,
       address: this.data.address,
