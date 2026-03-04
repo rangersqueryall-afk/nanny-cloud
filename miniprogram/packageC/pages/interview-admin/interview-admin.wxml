@@ -74,7 +74,11 @@
         </view>
         <view class="row"><text class="label">OpenID：</text><text>{{item.openid}}</text></view>
         <view class="row" wx:if="{{item.phone}}"><text class="label">手机号：</text><text>{{item.phone}}</text></view>
+        <view class="row" wx:if="{{item.workerId}}"><text class="label">workerId：</text><text>{{item.workerId}}</text></view>
         <view class="row"><text class="label">创建时间：</text><text>{{item.createdAtText}}</text></view>
+        <view class="actions">
+          <button class="btn-secondary" data-user-id="{{item._id}}" data-role="{{item.role}}" bindtap="onChangeUserRole">修改角色</button>
+        </view>
       </view>
     </view>
 

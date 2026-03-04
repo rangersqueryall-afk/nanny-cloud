@@ -273,6 +273,33 @@ Page({
     });
   },
 
+  onChangeUserRole(e) {
+    const userId = e.currentTarget.dataset.userId;
+    const currentRole = e.currentTarget.dataset.role || 'user';
+    if (!userId) return;
+
+    const roleOptions = [
+      { key: 'user', label: '设为 user' },
+      { key: 'worker', label: '设为 worker' },
+      { key: 'platform', label: '设为 platform' }
+    ];
+
+    wx.showActionSheet({
+      itemList: roleOptions.map((x) => x.label),
+      success: (res) => {
+        const selected = roleOptions[res.tapIndex];
+        if (!selected || selected.key === currentRole) return;
+        app.callCloudFunction('user', 'platformSetUserRole', {
+          userId,
+          role: selected.key
+        }).then(() => {
+          app.showToast('角色已更新', 'success');
+          this.loadUsers(true);
+        }).catch((err) => app.showToast(err.message || '更新失败'));
+      }
+    });
+  },
+
   onSetDiscount(e) {
     const bookingId = e.currentTarget.dataset.bookingId;
     const current = this.normalizeDiscountFactor(e.currentTarget.dataset.discountFactor);

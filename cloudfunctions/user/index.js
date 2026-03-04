@@ -97,6 +97,8 @@ exports.main = async (event, context) => {
       return await platformSetWorkerPublic(OPENID, data);
     } else if (action === 'platformGetGrowthStats') {
       return await platformGetGrowthStats(OPENID, data);
+    } else if (action === 'platformSetUserRole') {
+      return await platformSetUserRole(OPENID, data);
     } else {
       return { success: false, message: '未知操作: ' + action };
     }
@@ -790,5 +792,55 @@ async function platformGetGrowthStats(openid, data) {
       newWorkers: newWorkersRes.total
     },
     message: '获取成功'
+  };
+}
+
+async function platformSetUserRole(openid, data) {
+  await assertPlatform(openid);
+  const userId = data && data.userId ? String(data.userId).trim() : '';
+  const nextRole = data && data.role ? String(data.role).trim() : '';
+  const allowRoles = ['user', 'worker', 'platform'];
+  if (!userId) return { success: false, message: 'userId不能为空' };
+  if (!allowRoles.includes(nextRole)) return { success: false, message: '角色不合法' };
+
+  const userRes = await db.collection('users').doc(userId).get();
+  const target = userRes && userRes.data ? userRes.data : null;
+  if (!target) return { success: false, message: '用户不存在' };
+
+  let workerId = target.workerId || '';
+  if (nextRole === 'worker') {
+    if (!workerId) {
+      const byOpenid = await db.collection('workers')
+        .where({ userOpenid: target.openid || '' })
+        .field({ _id: true })
+        .limit(1)
+        .get();
+      if (byOpenid.data && byOpenid.data.length > 0) {
+        workerId = byOpenid.data[0]._id;
+      }
+    }
+    if (!workerId) {
+      return { success: false, message: '该用户未绑定阿姨档案，无法设为worker' };
+    }
+  }
+
+  const patch = {
+    role: nextRole,
+    updatedAt: db.serverDate()
+  };
+  if (nextRole === 'worker') {
+    patch.workerId = workerId;
+  }
+
+  await db.collection('users').doc(userId).update({ data: patch });
+
+  return {
+    success: true,
+    data: {
+      userId,
+      role: nextRole,
+      workerId: nextRole === 'worker' ? workerId : (target.workerId || '')
+    },
+    message: '角色已更新'
   };
 }
