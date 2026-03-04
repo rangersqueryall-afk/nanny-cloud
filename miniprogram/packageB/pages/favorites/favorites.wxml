@@ -8,6 +8,10 @@
     refresher-background="#f5f5f5"
     bindrefresherrefresh="onRefresh"
   >
+    <view class="initial-loading" wx:if="{{isLoading && favorites.length === 0}}">
+      <loading type="spinner" text="加载中..." />
+    </view>
+
     <view class="list-content" wx:if="{{favorites.length > 0}}">
       <view class="favorite-card" wx:for="{{favorites}}" wx:key="workerId">
         <view class="main" bindtap="onCardTap" data-worker-id="{{item.workerId}}">
@@ -25,7 +29,7 @@
     </view>
 
     <view class="load-status">
-      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+      <loading wx:if="{{isLoading && favorites.length > 0}}" type="spinner" text="加载中..." />
       <text class="no-more" wx:if="{{!hasMore && favorites.length > 0}}">没有更多了</text>
     </view>
 

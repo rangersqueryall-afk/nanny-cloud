@@ -18,6 +18,13 @@
   padding: 20rpx 24rpx 0;
 }
 
+.initial-loading {
+  min-height: 320rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .booking-card {
   background: #fff;
   border-radius: 16rpx;

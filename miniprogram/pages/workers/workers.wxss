@@ -57,6 +57,13 @@
   min-height: 200rpx;
 }
 
+.initial-loading {
+  min-height: 320rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 下拉刷新区域样式优化 */
 .worker-list ::-webkit-scrollbar {
   display: none;

@@ -1,14 +1,33 @@
 <view class="admin-page">
-  <view class="tab-nav">
+  <view class="top-nav">
     <view
-      class="tab-item {{currentTab === index ? 'active' : ''}}"
-      wx:for="{{tabs}}"
+      class="top-item {{activeManagement === item.value ? 'active' : ''}}"
+      wx:for="{{managementTabs}}"
       wx:key="value"
-      data-index="{{index}}"
-      bindtap="onTabChange"
+      data-value="{{item.value}}"
+      bindtap="onManageTabChange"
     >
       <text>{{item.label}}</text>
     </view>
+  </view>
+
+  <view class="tab-nav" wx:if="{{activeManagement === 'booking'}}">
+    <view
+      class="tab-item {{currentBookingTab === index ? 'active' : ''}}"
+      wx:for="{{bookingTabs}}"
+      wx:key="value"
+      data-index="{{index}}"
+      bindtap="onBookingTabChange"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="stats-toolbar" wx:if="{{activeManagement === 'stats'}}">
+    <text class="stats-label">时间维度</text>
+    <picker mode="selector" range="{{rangeOptions}}" range-key="label" value="{{rangeIndex}}" bindchange="onRangeChange">
+      <view class="stats-picker">{{rangeOptions[rangeIndex].label}}</view>
+    </picker>
   </view>
 
   <scroll-view
@@ -19,7 +38,14 @@
     refresher-triggered="{{isRefreshing}}"
     bindrefresherrefresh="onRefresh"
   >
-    <view class="card-list" wx:if="{{list.length > 0}}">
+    <view class="initial-loading" wx:if="{{isLoading && activeManagement !== 'stats' && list.length === 0}}">
+      <loading type="spinner" text="加载中..." />
+    </view>
+    <view class="initial-loading" wx:if="{{isLoading && activeManagement === 'stats'}}">
+      <loading type="spinner" text="统计加载中..." />
+    </view>
+
+    <view class="card-list" wx:if="{{activeManagement === 'booking' && list.length > 0}}">
       <view class="card" wx:for="{{list}}" wx:key="_id">
         <view class="head">
           <text class="name">{{item.workerName || '阿姨'}} / {{item.contactName || item.userNickname || '雇主'}}</text>
@@ -30,47 +56,74 @@
         <view class="row" wx:if="{{item.startDate}}"><text class="label">开始日期：</text><text>{{item.startDate}}</text></view>
         <view class="row"><text class="label">折扣系数：</text><text>{{item.discountFactor}}</text></view>
         <view class="row" wx:if="{{item.interviewTime}}"><text class="label">面试时间：</text><text>{{item.interviewTime}}</text></view>
-        <view class="row" wx:if="{{item.platformNote}}"><text class="label">平台备注：</text><text>{{item.platformNote}}</text></view>
 
         <view class="actions">
-          <button
-            class="btn-primary"
-            wx:if="{{item.canSetDiscount}}"
-            data-booking-id="{{item._id}}"
-            data-discount-factor="{{item.discountFactor}}"
-            bindtap="onSetDiscount"
-          >设置折扣</button>
-          <button
-            class="btn-primary"
-            wx:if="{{item.canSchedule}}"
-            data-booking-id="{{item._id}}"
-            bindtap="onScheduleInterview"
-          >安排面试</button>
-
-          <button
-            class="btn-danger"
-            wx:if="{{item.canSetResult}}"
-            data-booking-id="{{item._id}}"
-            data-passed="{{false}}"
-            bindtap="onSetInterviewResult"
-          >不通过</button>
-          <button
-            class="btn-primary"
-            wx:if="{{item.canSetResult}}"
-            data-booking-id="{{item._id}}"
-            data-passed="{{true}}"
-            bindtap="onSetInterviewResult"
-          >通过</button>
+          <button class="btn-secondary" wx:if="{{item.canSetDiscount}}" data-booking-id="{{item._id}}" data-discount-factor="{{item.discountFactor}}" bindtap="onSetDiscount">设置折扣</button>
+          <button class="btn-primary" wx:if="{{item.canSchedule}}" data-booking-id="{{item._id}}" bindtap="onScheduleInterview">安排面试</button>
+          <button class="btn-danger" wx:if="{{item.canSetResult}}" data-booking-id="{{item._id}}" data-passed="{{false}}" bindtap="onSetInterviewResult">不通过</button>
+          <button class="btn-primary" wx:if="{{item.canSetResult}}" data-booking-id="{{item._id}}" data-passed="{{true}}" bindtap="onSetInterviewResult">通过</button>
         </view>
       </view>
     </view>
 
-    <view class="load-status">
-      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+    <view class="card-list" wx:if="{{activeManagement === 'user' && list.length > 0}}">
+      <view class="card" wx:for="{{list}}" wx:key="_id">
+        <view class="head">
+          <text class="name">{{item.nickname || '微信用户'}}</text>
+          <text class="status">{{item.role}}</text>
+        </view>
+        <view class="row"><text class="label">OpenID：</text><text>{{item.openid}}</text></view>
+        <view class="row" wx:if="{{item.phone}}"><text class="label">手机号：</text><text>{{item.phone}}</text></view>
+        <view class="row"><text class="label">创建时间：</text><text>{{item.createdAtText}}</text></view>
+      </view>
+    </view>
+
+    <view class="card-list" wx:if="{{activeManagement === 'worker' && list.length > 0}}">
+      <view class="card" wx:for="{{list}}" wx:key="_id">
+        <view class="head">
+          <text class="name">{{item.name || '阿姨'}}</text>
+          <text class="status">{{item.isPublic ? '上架中' : '已下架'}}</text>
+        </view>
+        <view class="row"><text class="label">服务类型：</text><text>{{item.serviceTypesText || '-'}}</text></view>
+        <view class="row"><text class="label">月薪：</text><text>¥{{item.price.monthly || 0}}</text></view>
+        <view class="row"><text class="label">订单数：</text><text>{{item.orderCount || 0}}</text></view>
+        <view class="row"><text class="label">创建时间：</text><text>{{item.createdAtText}}</text></view>
+        <view class="actions">
+          <button class="btn-secondary" data-worker-id="{{item._id}}" data-is-public="{{item.isPublic}}" bindtap="onToggleWorkerPublic">{{item.isPublic ? '下架' : '上架'}}</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="stats-wrap" wx:if="{{activeManagement === 'stats' && !isLoading}}">
+      <view class="stats-card">
+        <text class="stats-title">用户与阿姨</text>
+        <view class="stats-grid">
+          <view class="stats-item"><text class="n">{{stats.totalUsers}}</text><text class="k">用户总数</text></view>
+          <view class="stats-item"><text class="n">{{stats.newUsers}}</text><text class="k">新增用户</text></view>
+          <view class="stats-item"><text class="n">{{stats.totalWorkers}}</text><text class="k">阿姨总数</text></view>
+          <view class="stats-item"><text class="n">{{stats.newWorkers}}</text><text class="k">新增阿姨</text></view>
+        </view>
+      </view>
+
+      <view class="stats-card">
+        <text class="stats-title">订单</text>
+        <view class="stats-grid">
+          <view class="stats-item"><text class="n">{{stats.totalOrders}}</text><text class="k">订单总数</text></view>
+          <view class="stats-item"><text class="n">{{stats.newOrders}}</text><text class="k">新增订单</text></view>
+          <view class="stats-item"><text class="n">{{stats.paidOrders}}</text><text class="k">支付订单</text></view>
+          <view class="stats-item"><text class="n">{{stats.completedOrders}}</text><text class="k">完成订单</text></view>
+        </view>
+        <view class="stats-row"><text>应收金额：¥{{stats.payableAmount}}</text></view>
+        <view class="stats-row"><text>实收金额：¥{{stats.paidAmount}}</text></view>
+      </view>
+    </view>
+
+    <view class="load-status" wx:if="{{activeManagement !== 'stats'}}">
+      <loading wx:if="{{isLoading && list.length > 0}}" type="spinner" text="加载中..." />
       <text wx:if="{{!hasMore && list.length > 0}}" class="no-more">没有更多了</text>
     </view>
 
-    <view class="empty" wx:if="{{!isLoading && list.length === 0}}">
+    <view class="empty" wx:if="{{!isLoading && activeManagement !== 'stats' && list.length === 0}}">
       <text>暂无记录</text>
     </view>
   </scroll-view>

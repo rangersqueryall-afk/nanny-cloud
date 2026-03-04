@@ -10,6 +10,10 @@
     refresher-background="#f5f5f5"
     bindrefresherrefresh="onRefresh"
   >
+    <view class="initial-loading" wx:if="{{isLoading && bookings.length === 0}}">
+      <loading type="spinner" text="加载中..." />
+    </view>
+
     <view class="list-content" wx:if="{{bookings.length > 0}}">
       <view class="booking-card" wx:for="{{bookings}}" wx:key="_id">
         <view class="header">
@@ -66,7 +70,7 @@
     </view>
 
     <view class="load-status">
-      <loading wx:if="{{isLoading}}" type="spinner" text="加载中..." />
+      <loading wx:if="{{isLoading && bookings.length > 0}}" type="spinner" text="加载中..." />
       <text class="no-more" wx:if="{{!hasMore && bookings.length > 0}}">没有更多了</text>
     </view>
 

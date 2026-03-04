@@ -6,6 +6,7 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
+const $ = db.command.aggregate;
 
 // 脱敏姓名
 function maskName(name) {
@@ -38,6 +39,8 @@ exports.main = async (event, context) => {
       return await complete(OPENID, data);
     } else if (action === 'getStats') {
       return await getStats(OPENID, data);
+    } else if (action === 'platformGetStats') {
+      return await platformGetStats(OPENID, data);
     } else {
       return { success: false, message: '未知操作' };
     }
@@ -199,6 +202,36 @@ function getPayParamsFromCloudResponse(result) {
     };
   }
   return null;
+}
+
+const RANGE_MONTHS_MAP = {
+  recent: 0,
+  '1m': 1,
+  '2m': 2,
+  '3m': 3,
+  '6m': 6,
+  '12m': 12,
+  '24m': 24
+};
+
+function parseRangeStart(rangeKey) {
+  const key = String(rangeKey || 'recent');
+  const months = Object.prototype.hasOwnProperty.call(RANGE_MONTHS_MAP, key) ? RANGE_MONTHS_MAP[key] : 0;
+  const now = new Date();
+  if (months <= 0) {
+    const start = new Date(now.getTime());
+    start.setDate(start.getDate() - 7);
+    return start;
+  }
+  const start = new Date(now.getTime());
+  start.setMonth(start.getMonth() - months);
+  return start;
+}
+
+async function assertPlatform(openid) {
+  const userRes = await db.collection('users').where({ openid }).limit(1).get();
+  if (!userRes.data || userRes.data.length === 0) throw new Error('用户不存在');
+  if (userRes.data[0].role !== 'platform') throw new Error('仅平台管理员可操作');
 }
 
 async function syncOrderStatusByDate(openid) {
@@ -749,6 +782,62 @@ async function getStats(openid, data) {
       pending: pendingCount.total,
       serving: servingCount.total,
       completed: completedCount.total
+    },
+    message: '获取成功'
+  };
+}
+
+async function platformGetStats(openid, data) {
+  await assertPlatform(openid);
+  const rangeKey = data && data.rangeKey ? String(data.rangeKey) : 'recent';
+  const startDate = parseRangeStart(rangeKey);
+
+  const totalOrdersRes = await db.collection('orders').count();
+  const newOrdersRes = await db.collection('orders').where({
+    createdAt: _.gte(startDate)
+  }).count();
+  const paidOrdersRes = await db.collection('orders').where({
+    paymentStatus: 'paid',
+    paidAt: _.gte(startDate)
+  }).count();
+  const completedOrdersRes = await db.collection('orders').where({
+    status: 'completed',
+    updatedAt: _.gte(startDate)
+  }).count();
+
+  const payableAgg = await db.collection('orders')
+    .aggregate()
+    .match({ createdAt: _.gte(startDate) })
+    .group({
+      _id: null,
+      total: $.sum('$payableTotal')
+    })
+    .end()
+    .catch(() => ({ list: [] }));
+  const paidAgg = await db.collection('orders')
+    .aggregate()
+    .match({ paymentStatus: 'paid', paidAt: _.gte(startDate) })
+    .group({
+      _id: null,
+      total: $.sum('$paidAmount')
+    })
+    .end()
+    .catch(() => ({ list: [] }));
+
+  const payableAmount = payableAgg.list && payableAgg.list[0] ? roundMoney(payableAgg.list[0].total || 0) : 0;
+  const paidAmount = paidAgg.list && paidAgg.list[0] ? roundMoney(paidAgg.list[0].total || 0) : 0;
+
+  return {
+    success: true,
+    data: {
+      rangeKey,
+      startDate,
+      totalOrders: totalOrdersRes.total,
+      newOrders: newOrdersRes.total,
+      paidOrders: paidOrdersRes.total,
+      completedOrders: completedOrdersRes.total,
+      payableAmount,
+      paidAmount
     },
     message: '获取成功'
   };

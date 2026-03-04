@@ -5,6 +5,7 @@
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
+const _ = db.command;
 
 // 脱敏姓名
 function maskName(name) {
@@ -12,6 +13,51 @@ function maskName(name) {
   if (name.length === 1) return name + '*';
   if (name.length === 2) return name[0] + '*';
   return name[0] + '**';
+}
+
+const RANGE_MONTHS_MAP = {
+  recent: 0,
+  '1m': 1,
+  '2m': 2,
+  '3m': 3,
+  '6m': 6,
+  '12m': 12,
+  '24m': 24
+};
+
+function formatPagination(page, limit, total) {
+  return {
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit)
+  };
+}
+
+function parseRangeStart(rangeKey) {
+  const key = String(rangeKey || 'recent');
+  const months = Object.prototype.hasOwnProperty.call(RANGE_MONTHS_MAP, key) ? RANGE_MONTHS_MAP[key] : 0;
+  const now = new Date();
+  if (months <= 0) {
+    const start = new Date(now.getTime());
+    start.setDate(start.getDate() - 7);
+    return start;
+  }
+  const start = new Date(now.getTime());
+  start.setMonth(start.getMonth() - months);
+  return start;
+}
+
+async function assertPlatform(openid) {
+  const userRes = await db.collection('users').where({ openid }).limit(1).get();
+  if (!userRes.data || userRes.data.length === 0) {
+    throw new Error('用户不存在');
+  }
+  const user = userRes.data[0];
+  if (user.role !== 'platform') {
+    throw new Error('仅平台管理员可操作');
+  }
+  return user;
 }
 
 exports.main = async (event, context) => {
@@ -43,6 +89,14 @@ exports.main = async (event, context) => {
       return await getMyWorkerSettings(OPENID);
     } else if (action === 'updateMyWorkerSettings') {
       return await updateMyWorkerSettings(OPENID, data);
+    } else if (action === 'platformGetUsers') {
+      return await platformGetUsers(OPENID, data);
+    } else if (action === 'platformGetWorkers') {
+      return await platformGetWorkers(OPENID, data);
+    } else if (action === 'platformSetWorkerPublic') {
+      return await platformSetWorkerPublic(OPENID, data);
+    } else if (action === 'platformGetGrowthStats') {
+      return await platformGetGrowthStats(OPENID, data);
     } else {
       return { success: false, message: '未知操作: ' + action };
     }
@@ -572,4 +626,169 @@ async function updateMyWorkerSettings(openid, data) {
     console.error('updateMyWorkerSettings函数错误:', error);
     return { success: false, message: error.message };
   }
+}
+
+async function platformGetUsers(openid, data) {
+  await assertPlatform(openid);
+  const page = data && data.page ? Number(data.page) : 1;
+  const limit = data && data.limit ? Number(data.limit) : 10;
+  const keyword = data && data.keyword ? String(data.keyword).trim() : '';
+  const role = data && data.role ? String(data.role).trim() : 'all';
+
+  const where = {};
+  if (role !== 'all') where.role = role;
+  if (keyword) {
+    const reg = db.RegExp({ regexp: keyword, options: 'i' });
+    where.nickname = reg;
+  }
+
+  const listRes = await db.collection('users')
+    .where(where)
+    .orderBy('createdAt', 'desc')
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .get();
+  const countRes = await db.collection('users').where(where).count();
+
+  const list = (listRes.data || []).map((item) => ({
+    _id: item._id,
+    openid: item.openid || '',
+    nickname: item.nickname || '',
+    avatar: item.avatar || '/images/default-avatar.png',
+    phone: item.phone || '',
+    role: item.role || 'user',
+    workerId: item.workerId || '',
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
+  }));
+
+  return {
+    success: true,
+    data: {
+      list,
+      pagination: formatPagination(page, limit, countRes.total)
+    },
+    message: '获取成功'
+  };
+}
+
+async function platformGetWorkers(openid, data) {
+  await assertPlatform(openid);
+  const page = data && data.page ? Number(data.page) : 1;
+  const limit = data && data.limit ? Number(data.limit) : 10;
+  const keyword = data && data.keyword ? String(data.keyword).trim() : '';
+  const status = data && data.status ? String(data.status).trim() : 'all';
+
+  const where = {};
+  if (status !== 'all') where.status = status;
+  if (keyword) {
+    where.name = db.RegExp({ regexp: keyword, options: 'i' });
+  }
+
+  const listRes = await db.collection('workers')
+    .where(where)
+    .orderBy('createdAt', 'desc')
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .get();
+  const countRes = await db.collection('workers').where(where).count();
+
+  const workerList = listRes.data || [];
+  const workerIds = workerList.map((item) => item._id).filter(Boolean);
+  let userMap = {};
+  if (workerIds.length > 0) {
+    const userRes = await db.collection('users')
+      .where({
+        role: 'worker',
+        workerId: _.in(workerIds)
+      })
+      .field({ workerId: true, openid: true, nickname: true, phone: true, _id: true })
+      .get();
+    userMap = (userRes.data || []).reduce((acc, item) => {
+      if (item && item.workerId) acc[item.workerId] = item;
+      return acc;
+    }, {});
+  }
+
+  const list = workerList.map((item) => {
+    const userBind = userMap[item._id] || {};
+    return {
+      _id: item._id,
+      name: item.name || '',
+      avatar: item.avatar || '/images/default-avatar.png',
+      phone: item.phone || '',
+      status: item.status || 'offline',
+      isPublic: !!item.isPublic,
+      isVerified: !!item.isVerified,
+      serviceTypes: item.serviceTypes || [],
+      price: item.price || {},
+      rating: item.rating || 0,
+      orderCount: item.orderCount || 0,
+      userOpenid: item.userOpenid || '',
+      bindUserId: userBind._id || '',
+      bindUserNickname: userBind.nickname || '',
+      bindUserPhone: userBind.phone || '',
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    };
+  });
+
+  return {
+    success: true,
+    data: {
+      list,
+      pagination: formatPagination(page, limit, countRes.total)
+    },
+    message: '获取成功'
+  };
+}
+
+async function platformSetWorkerPublic(openid, data) {
+  await assertPlatform(openid);
+  const workerId = data && data.workerId ? String(data.workerId).trim() : '';
+  if (!workerId) return { success: false, message: 'workerId不能为空' };
+
+  const isPublic = !!(data && data.isPublic);
+  await db.collection('workers').doc(workerId).update({
+    data: {
+      isPublic,
+      status: isPublic ? 'available' : 'offline',
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return {
+    success: true,
+    data: { workerId, isPublic, status: isPublic ? 'available' : 'offline' },
+    message: '更新成功'
+  };
+}
+
+async function platformGetGrowthStats(openid, data) {
+  await assertPlatform(openid);
+  const rangeKey = data && data.rangeKey ? String(data.rangeKey) : 'recent';
+  const startDate = parseRangeStart(rangeKey);
+
+  const totalUsersRes = await db.collection('users').where({ role: _.neq('platform') }).count();
+  const totalWorkersRes = await db.collection('workers').count();
+  const newUsersRes = await db.collection('users').where({
+    role: _.neq('platform'),
+    createdAt: _.gte(startDate)
+  }).count();
+  const newWorkersRes = await db.collection('workers').where({
+    createdAt: _.gte(startDate)
+  }).count();
+
+  return {
+    success: true,
+    data: {
+      rangeKey,
+      startDate,
+      totalUsers: totalUsersRes.total,
+      totalWorkers: totalWorkersRes.total,
+      newUsers: newUsersRes.total,
+      newWorkers: newWorkersRes.total
+    },
+    message: '获取成功'
+  };
 }

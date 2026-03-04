@@ -313,7 +313,7 @@
 .mini-actions {
   margin-top: 12rpx;
   display: flex;
-  justify-content: flex-end;
+  justify-content: end;
   gap: 12rpx;
 }
 
