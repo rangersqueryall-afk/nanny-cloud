@@ -4,7 +4,14 @@
  */
 const app = getApp();
 const { PROFILE_ORDER_STATUS_TAB_INDEX } = require('../../utils/constants');
-const { getRoleFlagsByRole, getRoleFlagsByUser } = require('../../utils/role');
+const {
+  ROLE_VIEW_MODE,
+  getRoleFlagsByRole,
+  getRoleFlagsByUser,
+  getEffectiveRole
+} = require('../../utils/role');
+
+const ROLE_VIEW_MODE_STORAGE_KEY = 'platform_role_view_mode';
 
 Page({
   /**
@@ -15,6 +22,8 @@ Page({
     isLogin: false,
     isWorker: false,
     isPlatform: false,
+    canSwitchPlatformRole: false,
+    roleViewMode: ROLE_VIEW_MODE.PLATFORM,
     workerInfo: null,
     
     // 用户信息
@@ -65,11 +74,17 @@ Page({
   checkLoginStatus() {
     const userInfo = app.globalData.userInfo;
     const roleFlags = getRoleFlagsByUser(userInfo);
+    const rawRole = roleFlags.role;
+    const roleViewMode = this.getRoleViewMode(rawRole);
+    const effectiveRole = getEffectiveRole(rawRole, roleViewMode);
+    const effectiveFlags = getRoleFlagsByRole(effectiveRole);
     
     this.setData({
       isLogin: app.globalData.isLogin,
-      isPlatform: roleFlags.isPlatform,
-      isWorker: roleFlags.isWorker,
+      isPlatform: effectiveFlags.isPlatform,
+      isWorker: effectiveFlags.isWorker,
+      canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
+      roleViewMode,
       userInfo: {
         avatarUrl: userInfo && userInfo.avatar ? userInfo.avatar : '',
         nickName: userInfo && userInfo.nickname ? userInfo.nickname : '',
@@ -92,10 +107,18 @@ Page({
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
         const userData = res.data;
-        const roleFlags = getRoleFlagsByRole(userData.role);
+        const rawRole = userData.role;
+        const roleViewMode = this.getRoleViewMode(rawRole);
+        const effectiveRole = getEffectiveRole(rawRole, roleViewMode);
+        const roleFlags = getRoleFlagsByRole(effectiveRole);
+        if (rawRole !== ROLE_VIEW_MODE.PLATFORM) {
+          wx.removeStorageSync(ROLE_VIEW_MODE_STORAGE_KEY);
+        }
         this.setData({
           isWorker: roleFlags.isWorker,
           isPlatform: roleFlags.isPlatform,
+          canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
+          roleViewMode,
           workerInfo: userData.workerInfo,
           userInfo: {
             avatarUrl: userData.avatar,
@@ -177,7 +200,10 @@ Page({
             wx.hideLoading();
             
             const data = loginRes.data;
-            const roleFlags = getRoleFlagsByRole(data.userInfo.role);
+            const rawRole = data.userInfo.role;
+            const roleViewMode = this.getRoleViewMode(rawRole);
+            const effectiveRole = getEffectiveRole(rawRole, roleViewMode);
+            const roleFlags = getRoleFlagsByRole(effectiveRole);
             
             app.globalData.userInfo = data.userInfo;
             app.globalData.isLogin = true;
@@ -187,6 +213,8 @@ Page({
               isLogin: true,
               isWorker: roleFlags.isWorker,
               isPlatform: roleFlags.isPlatform,
+              canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
+              roleViewMode,
               workerInfo: data.workerInfo,
               userInfo: {
                 avatarUrl: data.userInfo.avatar,
@@ -504,6 +532,37 @@ Page({
     app.requestSubscribeNotifications({ showToast: true });
   },
 
+  getRoleViewMode(rawRole) {
+    const normalizedRawRole = rawRole || ROLE_VIEW_MODE.USER;
+    if (normalizedRawRole !== ROLE_VIEW_MODE.PLATFORM) return ROLE_VIEW_MODE.USER;
+    const globalMode = app.globalData.platformRoleViewMode;
+    if (globalMode === ROLE_VIEW_MODE.USER || globalMode === ROLE_VIEW_MODE.PLATFORM) return globalMode;
+    const cached = wx.getStorageSync(ROLE_VIEW_MODE_STORAGE_KEY);
+    if (cached === ROLE_VIEW_MODE.USER || cached === ROLE_VIEW_MODE.PLATFORM) {
+      app.globalData.platformRoleViewMode = cached;
+      return cached;
+    }
+    app.globalData.platformRoleViewMode = ROLE_VIEW_MODE.PLATFORM;
+    return ROLE_VIEW_MODE.PLATFORM;
+  },
+
+  onSwitchRoleView(e) {
+    if (!this.data.isLogin || !this.data.canSwitchPlatformRole) return;
+    const mode = e.currentTarget.dataset.mode;
+    if (mode !== ROLE_VIEW_MODE.USER && mode !== ROLE_VIEW_MODE.PLATFORM) return;
+    if (mode === this.data.roleViewMode) return;
+
+    wx.setStorageSync(ROLE_VIEW_MODE_STORAGE_KEY, mode);
+    app.globalData.platformRoleViewMode = mode;
+    const roleFlags = getRoleFlagsByRole(getEffectiveRole(ROLE_VIEW_MODE.PLATFORM, mode));
+    this.setData({
+      roleViewMode: mode,
+      isPlatform: roleFlags.isPlatform,
+      isWorker: roleFlags.isWorker
+    });
+    app.showToast(mode === ROLE_VIEW_MODE.PLATFORM ? '已切换为平台视角' : '已切换为雇主视角', 'success');
+  },
+
   /**
    * 注册为阿姨
    */
@@ -539,6 +598,8 @@ Page({
             isLogin: false,
             isWorker: false,
             isPlatform: false,
+            canSwitchPlatformRole: false,
+            roleViewMode: ROLE_VIEW_MODE.PLATFORM,
             workerInfo: null,
             userInfo: {
               avatarUrl: '',
@@ -551,6 +612,9 @@ Page({
             title: '已退出登录',
             icon: 'success'
           });
+
+          wx.removeStorageSync(ROLE_VIEW_MODE_STORAGE_KEY);
+          app.globalData.platformRoleViewMode = '';
         }
       }
     });

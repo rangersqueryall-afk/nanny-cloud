@@ -133,13 +133,19 @@
 .btn-danger,
 .btn-secondary {
   margin: 0;
-  min-width: 146rpx;
+  width: 150rpx;
+  min-width: 150rpx;
+  max-width: 150rpx;
   height: 56rpx;
   line-height: 56rpx;
   border-radius: 28rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #fff;
-  padding: 0 16rpx;
+  padding: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-primary {

@@ -10,7 +10,8 @@ App({
     userInfo: null,
     systemInfo: null,
     isLogin: false,
-    openid: null
+    openid: null,
+    platformRoleViewMode: ''
   },
 
   /**

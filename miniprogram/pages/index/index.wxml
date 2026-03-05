@@ -11,19 +11,18 @@
     <block wx:if="{{!isWorkerHome && !isPlatformHome}}">
     <!-- 顶部搜索栏 -->
     <view class="search-header">
-      <view class="search-box" bindtap="onSearchTap">
-        <text class="search-icon">🔍</text>
-        <text class="search-placeholder">搜索阿姨姓名、技能...</text>
+      <view class="search-tools">
+        <view class="city-switch-inline" bindtap="onSwitchCity">
+          <text class="city-inline-icon">📍</text>
+          <text class="city-inline-text" wx:if="{{cityLoading}}">定位中...</text>
+          <text class="city-inline-text" wx:elif="{{currentCity && currentCity !== '未定位' && currentCity !== '未开通城市'}}">{{currentCity}}</text>
+          <text class="city-inline-text city-inline-placeholder" wx:else>请选择城市</text>
+        </view>
+        <view class="search-box" bindtap="onSearchTap">
+          <text class="search-icon">🔍</text>
+          <text class="search-placeholder">搜索阿姨姓名、技能...</text>
+        </view>
       </view>
-    </view>
-
-    <view class="city-bar card">
-      <view class="city-info">
-        <text class="city-label">服务城市</text>
-        <text class="city-value">{{currentCity}}</text>
-        <text wx:if="{{citySource === 'manual'}}" class="city-tag">手动</text>
-      </view>
-      <button class="city-switch-btn" bindtap="onSwitchCity" loading="{{cityLoading}}">切换城市</button>
     </view>
 
     <view wx:if="{{!cityLoading && !citySupported}}" class="city-alert card">

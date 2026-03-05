@@ -40,7 +40,43 @@
 /* 搜索栏 */
 .search-header {
   background: linear-gradient(135deg, #FF6B6B, #E55A5A);
-  padding: 20rpx 30rpx 40rpx;
+  padding: 20rpx 30rpx 20rpx;
+}
+
+.search-tools {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.city-switch-inline {
+  height: 68rpx;
+  min-width: 130rpx;
+  max-width: 260rpx;
+  padding: 0 8rpx;
+  border-radius: 34rpx;
+  background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.city-inline-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.city-inline-text {
+  font-size: 24rpx;
+  color: #333;
+  max-width: 180rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.city-inline-placeholder {
+  color: #ff6b6b;
 }
 
 .search-box {
@@ -49,6 +85,7 @@
   background: #fff;
   border-radius: 36rpx;
   padding: 16rpx 30rpx;
+  flex: 1;
 }
 
 .search-icon {
@@ -62,55 +99,8 @@
   color: #999;
 }
 
-.city-bar {
-  margin: -16rpx 30rpx 24rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.city-info {
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
-}
-
-.city-label {
-  font-size: 24rpx;
-  color: #888;
-}
-
-.city-value {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.city-tag {
-  padding: 2rpx 10rpx;
-  border-radius: 20rpx;
-  background: #fff2f2;
-  color: #e55a5a;
-  font-size: 20rpx;
-}
-
-.city-switch-btn {
-  margin: 0;
-  width: 160rpx;
-  height: 56rpx;
-  line-height: 56rpx;
-  border-radius: 28rpx;
-  font-size: 24rpx;
-  color: #ff6b6b;
-  background: #fff5f5;
-}
-
-.city-switch-btn::after {
-  border: none;
-}
-
 .city-alert {
-  margin: 0 30rpx 20rpx;
+  margin: -8rpx 30rpx 20rpx;
   background: #fffaf3;
 }
 
@@ -315,6 +305,13 @@
 .hero-btn {
   margin: 0;
   width: 164rpx;
+  min-width: 164rpx;
+  max-width: 164rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  padding: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
   border-radius: 30rpx;
   font-size: 24rpx;
   color: #fff;
@@ -387,8 +384,15 @@
 .mini-btn {
   margin: 0;
   width: 150rpx;
+  min-width: 150rpx;
+  max-width: 150rpx;
+  height: 56rpx;
+  line-height: 56rpx;
   border-radius: 28rpx;
   font-size: 22rpx;
+  padding: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .mini-btn::after {
@@ -433,6 +437,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.platform-hero-row .mini-sub {
+  flex: 1;
+}
+
+.platform-hero-row .hero-btn {
+  margin-left: auto;
+}
+
+.platform-home .mini-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.platform-home .mini-actions .mini-btn {
+  margin-left: 12rpx;
+  margin-right: 0;
 }
 
 .group-title {

@@ -24,6 +24,21 @@
       <view class="user-detail">
         <block wx:if="{{isLogin}}">
           <text class="profile-label">个人资料</text>
+          <view class="role-switch" wx:if="{{canSwitchPlatformRole}}">
+            <text class="role-switch-label">身份视角</text>
+            <view class="role-switch-actions">
+              <view
+                class="role-switch-btn {{roleViewMode === 'user' ? 'active' : ''}}"
+                data-mode="user"
+                bindtap="onSwitchRoleView"
+              >雇主</view>
+              <view
+                class="role-switch-btn {{roleViewMode === 'platform' ? 'active' : ''}}"
+                data-mode="platform"
+                bindtap="onSwitchRoleView"
+              >平台</view>
+            </view>
+          </view>
           <view class="name-editor">
             <input class="user-name" type="nickname" placeholder="点击设置昵称" value="{{userInfo.nickName}}" bindchange="onNicknameChange" focus="{{nameInputFocus}}" bindblur="onNameInputBlur" />
             <text class="name-edit-icon" bindtap="onNameEditTap">✎</text>

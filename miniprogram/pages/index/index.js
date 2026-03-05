@@ -10,9 +10,10 @@ const {
   OPEN_SERVICE_CITIES,
   SERVICE_CITY_OPTIONS
 } = require('../../utils/constants');
-const { getRoleFlagsByRole } = require('../../utils/role');
+const { ROLE_VIEW_MODE, getRoleFlagsByRole, getEffectiveRole } = require('../../utils/role');
 
 const MANUAL_CITY_STORAGE_KEY = 'manual_service_city';
+const ROLE_VIEW_MODE_STORAGE_KEY = 'platform_role_view_mode';
 const CITY_BOUNDARIES = {
   '北京市': { minLat: 39.4, maxLat: 41.1, minLng: 115.7, maxLng: 117.5 },
   '西安市': { minLat: 33.7, maxLat: 34.8, minLng: 107.6, maxLng: 109.9 }
@@ -178,7 +179,9 @@ Page({
     app.callCloudFunction('user', 'getProfile')
       .then((res) => {
         const role = res && res.data && res.data.role ? res.data.role : USER_ROLE.USER;
-        const roleFlags = getRoleFlagsByRole(role);
+        const roleViewMode = this.getRoleViewMode(role);
+        const effectiveRole = getEffectiveRole(role, roleViewMode);
+        const roleFlags = getRoleFlagsByRole(effectiveRole);
         if (roleFlags.isWorker) {
           this.setData({
             isWorkerHome: true,
@@ -211,6 +214,19 @@ Page({
         this.setData({ isWorkerHome: false, isPlatformHome: false });
         this.ensureServiceCity().finally(() => this.loadRecommendWorkers(done));
       });
+  },
+
+  getRoleViewMode(rawRole) {
+    if (rawRole !== ROLE_VIEW_MODE.PLATFORM) return ROLE_VIEW_MODE.USER;
+    const globalMode = app.globalData.platformRoleViewMode;
+    if (globalMode === ROLE_VIEW_MODE.USER || globalMode === ROLE_VIEW_MODE.PLATFORM) return globalMode;
+    const cached = wx.getStorageSync(ROLE_VIEW_MODE_STORAGE_KEY);
+    if (cached === ROLE_VIEW_MODE.USER || cached === ROLE_VIEW_MODE.PLATFORM) {
+      app.globalData.platformRoleViewMode = cached;
+      return cached;
+    }
+    app.globalData.platformRoleViewMode = ROLE_VIEW_MODE.PLATFORM;
+    return ROLE_VIEW_MODE.PLATFORM;
   },
 
   promptPlatformSubscribeOncePerDay() {
