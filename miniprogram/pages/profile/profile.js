@@ -32,7 +32,12 @@ Page({
       nickName: '',
       phone: ''
     },
+    nickInputWidth: 220,
     nameInputFocus: false,
+    bgShiftA: 0,
+    bgShiftB: 0,
+    cardShift: 0,
+    cardScale: 1,
     
     // 订单统计
     orderStats: {
@@ -66,6 +71,12 @@ Page({
       this.loadUserInfo();
       this.loadOrderStats();
     }
+    this.updateParallax(0);
+  },
+
+  onPageScroll(e) {
+    const scrollTop = e && typeof e.scrollTop === 'number' ? e.scrollTop : 0;
+    this.updateParallax(scrollTop);
   },
 
   /**
@@ -85,6 +96,7 @@ Page({
       isWorker: effectiveFlags.isWorker,
       canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
       roleViewMode,
+      nickInputWidth: this.calcNickInputWidth(userInfo && userInfo.nickname ? userInfo.nickname : ''),
       userInfo: {
         avatarUrl: userInfo && userInfo.avatar ? userInfo.avatar : '',
         nickName: userInfo && userInfo.nickname ? userInfo.nickname : '',
@@ -119,6 +131,7 @@ Page({
           isPlatform: roleFlags.isPlatform,
           canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
           roleViewMode,
+          nickInputWidth: this.calcNickInputWidth(userData.nickname || ''),
           workerInfo: userData.workerInfo,
           userInfo: {
             avatarUrl: userData.avatar,
@@ -215,6 +228,7 @@ Page({
               isPlatform: roleFlags.isPlatform,
               canSwitchPlatformRole: rawRole === ROLE_VIEW_MODE.PLATFORM,
               roleViewMode,
+              nickInputWidth: this.calcNickInputWidth(data.userInfo.nickname || ''),
               workerInfo: data.workerInfo,
               userInfo: {
                 avatarUrl: data.userInfo.avatar,
@@ -312,7 +326,8 @@ Page({
     })
     .then(() => {
       this.setData({
-        'userInfo.nickName': nickName
+        'userInfo.nickName': nickName,
+        nickInputWidth: this.calcNickInputWidth(nickName)
       });
       if (app.globalData.userInfo) {
         app.globalData.userInfo.nickname = nickName;
@@ -328,6 +343,13 @@ Page({
   onNameEditTap() {
     this.setData({
       nameInputFocus: true
+    });
+  },
+
+  onNameTyping(e) {
+    const value = e && e.detail && typeof e.detail.value === 'string' ? e.detail.value : '';
+    this.setData({
+      nickInputWidth: this.calcNickInputWidth(value)
     });
   },
 
@@ -530,6 +552,41 @@ Page({
 
   onSubscribeNotify() {
     app.requestSubscribeNotifications({ showToast: true });
+  },
+
+  calcNickInputWidth(name) {
+    const text = String(name || '').trim();
+    if (!text) return 220;
+    let units = 0;
+    for (const ch of text) {
+      units += /[\u4e00-\u9fa5]/.test(ch) ? 1.8 : 1;
+    }
+    const width = Math.round(56 + units * 24);
+    return Math.max(160, Math.min(430, width));
+  },
+
+  updateParallax(scrollTop) {
+    const y = Math.max(0, Math.min(220, scrollTop));
+    const nextBgShiftA = Number((-y * 0.16).toFixed(2));
+    const nextBgShiftB = Number((-y * 0.3).toFixed(2));
+    const nextCardShift = Number((-y * 0.08).toFixed(2));
+    const nextCardScale = Number((1 - Math.min(y * 0.00045, 0.06)).toFixed(4));
+
+    if (
+      Math.abs((this.data.bgShiftA || 0) - nextBgShiftA) < 0.2
+      && Math.abs((this.data.bgShiftB || 0) - nextBgShiftB) < 0.2
+      && Math.abs((this.data.cardShift || 0) - nextCardShift) < 0.2
+      && Math.abs((this.data.cardScale || 1) - nextCardScale) < 0.001
+    ) {
+      return;
+    }
+
+    this.setData({
+      bgShiftA: nextBgShiftA,
+      bgShiftB: nextBgShiftB,
+      cardShift: nextCardShift,
+      cardScale: nextCardScale
+    });
   },
 
   getRoleViewMode(rawRole) {

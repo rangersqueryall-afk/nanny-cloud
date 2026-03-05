@@ -1,61 +1,74 @@
 <!-- 个人中心页面 -->
 <view class="profile-page">
-  <!-- 用户信息卡片 -->
-  <view class="user-card">
-    <view class="user-card-glow"></view>
-    <view class="user-info">
-      <!-- 头像区域 -->
-      <view class="avatar-wrapper">
-        <block wx:if="{{isLogin}}">
-          <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-            <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
-          </button>
-          <button class="avatar-edit-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-            ✎
-          </button>
-        </block>
-        <block wx:else>
-          <view class="avatar-default">
-            <view class="avatar-default-icon"></view>
-          </view>
-        </block>
+  <view class="profile-hero">
+    <view class="hero-layer hero-layer-a" style="transform: translate3d(0, {{bgShiftA}}px, 0);"></view>
+    <view class="hero-layer hero-layer-b" style="transform: translate3d(0, {{bgShiftB}}px, 0);"></view>
+    <view class="hero-noise"></view>
+    <view class="role-switch role-switch-page" wx:if="{{isLogin && canSwitchPlatformRole}}">
+      <view class="role-switch-actions">
+        <view
+          class="role-switch-btn {{roleViewMode === 'user' ? 'active' : ''}}"
+          data-mode="user"
+          bindtap="onSwitchRoleView"
+        >雇主</view>
+        <view
+          class="role-switch-btn {{roleViewMode === 'platform' ? 'active' : ''}}"
+          data-mode="platform"
+          bindtap="onSwitchRoleView"
+        >平台</view>
       </view>
-      <!-- 用户信息区域 -->
-      <view class="user-detail">
-        <block wx:if="{{isLogin}}">
-          <text class="profile-label">个人资料</text>
-          <view class="role-switch" wx:if="{{canSwitchPlatformRole}}">
-            <text class="role-switch-label">身份视角</text>
-            <view class="role-switch-actions">
-              <view
-                class="role-switch-btn {{roleViewMode === 'user' ? 'active' : ''}}"
-                data-mode="user"
-                bindtap="onSwitchRoleView"
-              >雇主</view>
-              <view
-                class="role-switch-btn {{roleViewMode === 'platform' ? 'active' : ''}}"
-                data-mode="platform"
-                bindtap="onSwitchRoleView"
-              >平台</view>
-            </view>
-          </view>
-          <view class="name-editor">
-            <input class="user-name" type="nickname" placeholder="点击设置昵称" value="{{userInfo.nickName}}" bindchange="onNicknameChange" focus="{{nameInputFocus}}" bindblur="onNameInputBlur" />
-            <text class="name-edit-icon" bindtap="onNameEditTap">✎</text>
-          </view>
-          <view class="phone-row">
-            <button wx:if="{{!userInfo.phone}}" class="bind-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onBindPhone">
-              绑定手机号
+    </view>
+
+    <!-- 用户信息卡片 -->
+    <view class="user-card" style="transform: translate3d(0, {{cardShift}}px, 0) scale({{cardScale}});">
+      <view class="user-card-glow"></view>
+      <view class="user-info">
+        <!-- 头像区域 -->
+        <view class="avatar-wrapper">
+          <block wx:if="{{isLogin}}">
+            <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+              <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
             </button>
-            <text class="user-meta">{{userInfo.phone ? userInfo.phone : '绑定手机号可提升匹配效率'}}</text>
-          </view>
-        </block>
-        <block wx:else>
-          <view class="login-section">
-            <button class="login-btn" bindtap="onLogin">点击登录</button>
-            <text class="login-tip">登录后享受更多服务</text>
-          </view>
-        </block>
+            <button class="avatar-edit-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+              ✎
+            </button>
+          </block>
+          <block wx:else>
+            <view class="avatar-default">
+              <view class="avatar-default-icon"></view>
+            </view>
+          </block>
+        </view>
+        <!-- 用户信息区域 -->
+        <view class="user-detail">
+          <block wx:if="{{isLogin}}">
+            <view class="name-editor">
+              <input
+                class="user-name"
+                type="nickname"
+                placeholder="点击设置昵称"
+                value="{{userInfo.nickName}}"
+                style="width: {{nickInputWidth}}rpx;"
+                bindinput="onNameTyping"
+                bindchange="onNicknameChange"
+                focus="{{nameInputFocus}}"
+                bindblur="onNameInputBlur"
+              />
+              <text class="name-edit-icon" bindtap="onNameEditTap">✎</text>
+            </view>
+            <view class="phone-row">
+              <button wx:if="{{!userInfo.phone}}" class="bind-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onBindPhone">
+                绑定手机号
+              </button>
+            </view>
+          </block>
+          <block wx:else>
+            <view class="login-section">
+              <button class="login-btn" bindtap="onLogin">点击登录</button>
+              <text class="login-tip">登录后享受更多服务</text>
+            </view>
+          </block>
+        </view>
       </view>
     </view>
   </view>

@@ -1,26 +1,75 @@
 /* 个人中心页面样式 */
 .profile-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: linear-gradient(180deg, #f8f2eb 0%, #f3f4f7 280rpx, #f5f5f5 100%);
   padding-bottom: 40rpx;
+}
+
+/* 视差 Hero */
+.profile-hero {
+  position: relative;
+  min-height: 350rpx;
+  padding: 106rpx 24rpx 24rpx;
+  background: linear-gradient(132deg, #f25f4c 0%, #ec4f45 42%, #f49b44 100%);
+  border-bottom-left-radius: 44rpx;
+  border-bottom-right-radius: 44rpx;
+  overflow: hidden;
+}
+
+.hero-layer {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999rpx;
+  filter: blur(8rpx);
+  transition: transform 0.08s linear;
+}
+
+.hero-layer-a {
+  width: 520rpx;
+  height: 520rpx;
+  left: -220rpx;
+  top: -220rpx;
+  background: radial-gradient(circle, rgba(255, 214, 179, 0.42) 0%, rgba(255, 214, 179, 0) 72%);
+}
+
+.hero-layer-b {
+  width: 460rpx;
+  height: 460rpx;
+  right: -180rpx;
+  top: -160rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0) 74%);
+}
+
+.hero-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.04) 75%, transparent 75%, transparent);
+  background-size: 18rpx 18rpx;
+  opacity: 0.45;
 }
 
 /* 用户信息卡片 */
 .user-card {
   position: relative;
-  background: linear-gradient(135deg, #ff7467 0%, #ff625d 55%, #ff8b6f 100%);
-  padding: 56rpx 30rpx 72rpx;
-  overflow: hidden;
+  border-radius: 34rpx;
+  padding: 34rpx 28rpx;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.18) 100%);
+  box-shadow: 0 18rpx 38rpx rgba(109, 40, 32, 0.23);
+  border: 1rpx solid rgba(255, 255, 255, 0.36);
+  backdrop-filter: blur(8px);
+  transform-origin: top center;
+  transition: transform 0.08s linear;
 }
 
 .user-card-glow {
   position: absolute;
-  width: 360rpx;
-  height: 360rpx;
-  right: -120rpx;
-  top: -140rpx;
+  width: 280rpx;
+  height: 280rpx;
+  right: -90rpx;
+  top: -90rpx;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 68%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 72%);
   pointer-events: none;
 }
 
@@ -133,22 +182,29 @@
 
 .profile-label {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.86);
   letter-spacing: 2rpx;
   margin-bottom: 10rpx;
 }
 
 .role-switch {
-  margin-bottom: 12rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10rpx;
 }
 
+.role-switch-page {
+  position: absolute;
+  top: 16rpx;
+  right: 20rpx;
+  margin-bottom: 0;
+  z-index: 5;
+}
+
 .role-switch-label {
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .role-switch-actions {
@@ -156,7 +212,7 @@
   align-items: center;
   border-radius: 999rpx;
   padding: 4rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .role-switch-btn {
@@ -175,14 +231,16 @@
 }
 
 .name-editor {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   height: 72rpx;
-  padding: 0 12rpx 0 24rpx;
+  padding: 0 16rpx 0 84rpx;
   border-radius: 36rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.24);
   margin-bottom: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.24);
+  /* border: 1rpx solid rgba(255, 255, 255, 0.3); */
+  max-width: 100%;
+  align-self: flex-start;
 }
 
 .user-name {
@@ -193,11 +251,9 @@
   border: none;
   padding: 0;
   margin-bottom: 0;
-  display: block;
+  display: inline-block;
   height: 72rpx;
   line-height: 72rpx;
-  flex: 1;
-  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -206,9 +262,9 @@
 }
 
 .name-edit-icon {
-  margin-left: 12rpx;
+  margin-left: 8rpx;
   font-size: 20rpx;
-  width: 84rpx;
+  width: 52rpx;
   height: 44rpx;
   line-height: 44rpx;
   text-align: center;
@@ -232,15 +288,18 @@
 .phone-row {
   margin-top: 4rpx;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 10rpx;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .bind-phone-btn {
   margin: 0;
-  width: 144rpx;
+  min-width: 144rpx;
+  max-width: 144rpx;
   height: 48rpx;
   line-height: 48rpx;
   border-radius: 999rpx;
@@ -301,30 +360,39 @@
 /* 订单统计 */
 .stats-card {
   display: flex;
-  justify-content: space-around;
-  padding: 30rpx 0;
-  margin-top: -30rpx;
+  justify-content: space-between;
+  padding: 24rpx 14rpx;
+  margin-top: -46rpx;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  border: 1rpx solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
 }
 
 .stats-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10rpx 20rpx;
+  padding: 10rpx 6rpx;
+  flex: 1;
+  border-radius: 14rpx;
+}
+
+.stats-item:active {
+  background: #fff3f1;
 }
 
 .stats-num {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: bold;
-  color: #FF6B6B;
-  margin-bottom: 8rpx;
+  color: #ff594f;
+  margin-bottom: 6rpx;
 }
 
 .stats-label {
-  font-size: 24rpx;
-  color: #666;
+  font-size: 22rpx;
+  color: #6a6a6a;
 }
 
 /* 菜单组 */
