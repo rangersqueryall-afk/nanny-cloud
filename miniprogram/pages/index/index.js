@@ -3,8 +3,20 @@
  * 阿姨快约 - 保姆/育儿嫂中介小程序（云开发版）
  */
 const app = getApp();
-const { USER_ROLE, BOOKING_STATUS, BOOKING_STATUS_TEXT } = require('../../utils/constants');
+const {
+  USER_ROLE,
+  BOOKING_STATUS,
+  BOOKING_STATUS_TEXT,
+  OPEN_SERVICE_CITIES,
+  SERVICE_CITY_OPTIONS
+} = require('../../utils/constants');
 const { getRoleFlagsByRole } = require('../../utils/role');
+
+const MANUAL_CITY_STORAGE_KEY = 'manual_service_city';
+const CITY_BOUNDARIES = {
+  '北京市': { minLat: 39.4, maxLat: 41.1, minLng: 115.7, maxLng: 117.5 },
+  '西安市': { minLat: 33.7, maxLat: 34.8, minLng: 107.6, maxLng: 109.9 }
+};
 
 Page({
   /**
@@ -104,7 +116,16 @@ Page({
     
     // 推荐阿姨
     recommendWorkers: [],
-    
+
+    // 服务城市
+    currentCity: '未定位',
+    citySource: '',
+    citySupported: false,
+    cityLoading: false,
+    locationDenied: false,
+    openServiceCities: OPEN_SERVICE_CITIES,
+    openServiceCitiesText: OPEN_SERVICE_CITIES.join('、'),
+
     // 加载状态
     loading: false
   },
@@ -150,7 +171,7 @@ Page({
 
     if (!app.globalData.isLogin) {
       this.setData({ isWorkerHome: false, isPlatformHome: false });
-      this.loadRecommendWorkers(done);
+      this.ensureServiceCity().finally(() => this.loadRecommendWorkers(done));
       return;
     }
 
@@ -183,12 +204,12 @@ Page({
           isPlatformHome: false,
           workerInfo: null
         });
-        this.loadRecommendWorkers(done);
+        this.ensureServiceCity().finally(() => this.loadRecommendWorkers(done));
       })
       .catch((err) => {
         console.error('初始化首页失败:', err);
         this.setData({ isWorkerHome: false, isPlatformHome: false });
-        this.loadRecommendWorkers(done);
+        this.ensureServiceCity().finally(() => this.loadRecommendWorkers(done));
       });
   },
 
@@ -347,6 +368,108 @@ Page({
     return `${y}-${m}-${d}`;
   },
 
+  ensureServiceCity() {
+    this.setData({ cityLoading: true });
+    const manualCity = wx.getStorageSync(MANUAL_CITY_STORAGE_KEY);
+    return this.resolveCityByLocation()
+      .then((city) => {
+        if (city) {
+          this.applyServiceCity(city, 'auto');
+          return;
+        }
+        if (manualCity) {
+          this.applyServiceCity(manualCity, 'manual');
+          return;
+        }
+        this.applyServiceCity('未开通城市', 'unknown');
+      })
+      .catch(() => {
+        if (manualCity) {
+          this.applyServiceCity(manualCity, 'manual');
+          return;
+        }
+        this.applyServiceCity('未开通城市', 'unknown');
+      })
+      .finally(() => {
+        this.setData({ cityLoading: false });
+      });
+  },
+
+  resolveCityByLocation() {
+    return new Promise((resolve, reject) => {
+      wx.getLocation({
+        type: 'gcj02',
+        success: (res) => {
+          this.setData({ locationDenied: false });
+          resolve(this.getOpenCityByCoordinate(res.latitude, res.longitude));
+        },
+        fail: (err) => {
+          const permissionDenied = err && (err.errMsg || '').includes('auth deny');
+          this.setData({ locationDenied: permissionDenied });
+          reject(err);
+        }
+      });
+    });
+  },
+
+  getOpenCityByCoordinate(latitude, longitude) {
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') return '';
+    const city = Object.keys(CITY_BOUNDARIES).find((name) => {
+      const boundary = CITY_BOUNDARIES[name];
+      return latitude >= boundary.minLat
+        && latitude <= boundary.maxLat
+        && longitude >= boundary.minLng
+        && longitude <= boundary.maxLng;
+    });
+    return city || '';
+  },
+
+  applyServiceCity(city, source) {
+    const normalizedCity = city || '未开通城市';
+    const citySupported = OPEN_SERVICE_CITIES.includes(normalizedCity);
+    this.setData({
+      currentCity: normalizedCity,
+      citySource: source || '',
+      citySupported
+    });
+  },
+
+  guardServiceAvailable(actionText) {
+    if (this.data.isWorkerHome || this.data.isPlatformHome) return true;
+    if (this.data.cityLoading) {
+      app.showToast('正在定位服务城市，请稍后');
+      return false;
+    }
+    if (this.data.citySupported) {
+      return true;
+    }
+
+    wx.showModal({
+      title: '服务暂未开通',
+      content: `当前仅支持${OPEN_SERVICE_CITIES.join('、')}。${actionText}暂不可用。`,
+      showCancel: false
+    });
+    return false;
+  },
+
+  onSwitchCity() {
+    const itemList = SERVICE_CITY_OPTIONS.map(item => item.label).concat('其他城市（暂未开通）');
+    wx.showActionSheet({
+      itemList,
+      success: (res) => {
+        const index = res.tapIndex;
+        if (index < SERVICE_CITY_OPTIONS.length) {
+          const city = SERVICE_CITY_OPTIONS[index].value;
+          wx.setStorageSync(MANUAL_CITY_STORAGE_KEY, city);
+          this.applyServiceCity(city, 'manual');
+          return;
+        }
+        wx.removeStorageSync(MANUAL_CITY_STORAGE_KEY);
+        this.applyServiceCity('未开通城市', 'manual');
+      }
+    });
+  },
+
   /**
    * 搜索输入
    */
@@ -372,6 +495,7 @@ Page({
    * 点击搜索栏（跳转到搜索页面）
    */
   onSearchTap() {
+    if (!this.guardServiceAvailable('搜索阿姨')) return;
     wx.navigateTo({
       url: '/pages/workers/workers'
     });
@@ -393,6 +517,7 @@ Page({
    * 服务类型点击
    */
   onServiceTap(e) {
+    if (!this.guardServiceAvailable('查看服务')) return;
     const { type } = e.currentTarget.dataset;
     if (!type) return;
     wx.navigateTo({
@@ -533,6 +658,7 @@ Page({
    * 推荐阿姨点击
    */
   onWorkerTap(e) {
+    if (!this.guardServiceAvailable('查看阿姨详情')) return;
     const { workerId } = e.detail;
     wx.navigateTo({
       url: `/packageA/pages/worker-detail/worker-detail?id=${workerId}`
@@ -543,6 +669,7 @@ Page({
    * 查看更多阿姨
    */
   onMoreTap() {
+    if (!this.guardServiceAvailable('查看更多阿姨')) return;
     wx.navigateTo({
       url: '/pages/workers/workers'
     });
@@ -552,6 +679,7 @@ Page({
    * 点击预约按钮
    */
   onBookTap(e) {
+    if (!this.guardServiceAvailable('预约阿姨')) return;
     // 检查登录状态
     if (!app.globalData.isLogin) {
       this.showLoginModal('预约阿姨');
@@ -638,9 +766,10 @@ Page({
    * 查看更多阿姨
    */
   onViewMoreTap() {
+    if (!this.guardServiceAvailable('查看更多阿姨')) return;
     wx.navigateTo({
       url: '/pages/workers/workers'
-    });阿姨快约
+    });
   },
 
   /**
@@ -652,7 +781,7 @@ Page({
       desc: '提供优质保姆、育儿嫂、月嫂服务，让您的生活更轻松！',
       path: '/pages/index/index',
       imageUrl: '/images/share.png'
-    };阿姨快约
+    };
   },
 
   /**

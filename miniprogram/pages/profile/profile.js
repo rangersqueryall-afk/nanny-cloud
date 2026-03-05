@@ -351,48 +351,34 @@ Page({
       return;
     }
 
-    const { encryptedData, iv } = detail;
-    if (!encryptedData || !iv) {
-      app.showToast('未获取到加密数据，绑定失败');
+    const phoneCode = detail.code ? String(detail.code).trim() : '';
+    if (!phoneCode) {
+      app.showToast('未获取到手机号授权码，请重试');
       return;
     }
 
-    // wx.getPhoneNumber 不会返回登录 code；需要先调用 wx.login 获取 code 并一并发送给后端由后端用 session_key 解密
-    wx.login({
-      success: (loginRes) => {
-        const code = loginRes && loginRes.code ? loginRes.code : '';
-        if (!code) {
-          app.showToast('获取登录凭证失败，请重试');
+    app.callCloudFunction('user', 'bindPhone', { code: phoneCode })
+      .then((res) => {
+        const phone = res && res.data && res.data.phone ? res.data.phone : '';
+        if (!phone) {
+          app.showToast('绑定失败');
           return;
         }
 
-        app.callCloudFunction('user', 'bindPhone', { code, encryptedData, iv })
-          .then((res) => {
-            const phone = res && res.data && res.data.phone ? res.data.phone : '';
-            if (!phone) {
-              app.showToast('绑定失败');
-              return;
-            }
+        this.setData({
+          'userInfo.phone': phone
+        });
 
-            this.setData({
-              'userInfo.phone': phone
-            });
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo.phone = phone;
+          wx.setStorageSync('userInfo', app.globalData.userInfo);
+        }
 
-            if (app.globalData.userInfo) {
-              app.globalData.userInfo.phone = phone;
-              wx.setStorageSync('userInfo', app.globalData.userInfo);
-            }
-
-            app.showToast('手机号已绑定', 'success');
-          })
-          .catch((err) => {
-            app.showToast(err.message || '绑定失败');
-          });
-      },
-      fail: () => {
-        app.showToast('获取登录凭证失败，请重试');
-      }
-    });
+        app.showToast('手机号已绑定', 'success');
+      })
+      .catch((err) => {
+        app.showToast(err.message || '绑定失败');
+      });
   },
 
   /**

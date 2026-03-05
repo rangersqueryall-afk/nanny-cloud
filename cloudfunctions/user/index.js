@@ -369,6 +369,13 @@ async function bindPhone(openid, data) {
     };
   } catch (error) {
     console.error('bindPhone函数错误:', error);
+    const errCode = error && (error.errCode || error.code);
+    if (String(errCode) === '240029') {
+      return {
+        success: false,
+        message: '手机号接口未开通或云函数权限未配置，请在云函数 user 的 config.json 中加入 phonenumber.getPhoneNumber 并重新部署'
+      };
+    }
     return { success: false, message: error.message || '绑定失败' };
   }
 }

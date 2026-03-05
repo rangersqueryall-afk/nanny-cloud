@@ -17,6 +17,21 @@
       </view>
     </view>
 
+    <view class="city-bar card">
+      <view class="city-info">
+        <text class="city-label">服务城市</text>
+        <text class="city-value">{{currentCity}}</text>
+        <text wx:if="{{citySource === 'manual'}}" class="city-tag">手动</text>
+      </view>
+      <button class="city-switch-btn" bindtap="onSwitchCity" loading="{{cityLoading}}">切换城市</button>
+    </view>
+
+    <view wx:if="{{!cityLoading && !citySupported}}" class="city-alert card">
+      <text class="city-alert-title">当前城市暂未开通</text>
+      <text class="city-alert-desc">目前仅支持：{{openServiceCitiesText}}</text>
+      <text wx:if="{{locationDenied}}" class="city-alert-desc">定位权限未开启，可点击“切换城市”手动选择。</text>
+    </view>
+
     <!-- 轮播图 -->
     <view class="banner-section">
       <swiper

@@ -18,6 +18,13 @@ const SERVICE_SCHEDULE_TEXT = {
   temporary: '临时服务'
 };
 
+const OPEN_SERVICE_CITIES = ['北京市', '西安市'];
+
+const SERVICE_CITY_OPTIONS = [
+  { label: '北京市', value: '北京市' },
+  { label: '西安市', value: '西安市' }
+];
+
 const ORDER_STATUS = {
   PENDING_PAYMENT: 'pending_payment',
   PENDING: 'pending',
@@ -121,6 +128,8 @@ module.exports = {
   USER_ROLE,
   SERVICE_TYPE_TEXT,
   SERVICE_SCHEDULE_TEXT,
+  OPEN_SERVICE_CITIES,
+  SERVICE_CITY_OPTIONS,
   ORDER_STATUS,
   ORDER_LIST_STATUS_TEXT,
   ORDER_DETAIL_STATUS_TEXT,
